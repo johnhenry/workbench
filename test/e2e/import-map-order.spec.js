@@ -28,5 +28,7 @@ test("modulepreload before the import map (the order in mport's docs): recorded 
   const result = await run(page, preload + map);
   test.info().annotations.push({ type: "preload-then-importmap", description: `${browserName}: ${result === 42 ? "works" : "BREAKS (the import map is ignored)"}` });
   console.log(`[order] ${browserName}: modulepreload-then-importmap ${result === 42 ? "works" : "BREAKS"}`);
-  expect([42, null]).toContain(result);
+  // Firefox (155) ignores an import map that follows a modulepreload; Chromium and WebKit take either order.
+  // Pinned per engine, like mport's own browser spec: it fails the day an engine changes.
+  expect(result).toBe(browserName === "firefox" ? null : 42);
 });

@@ -25,6 +25,11 @@ test.describe("forms: form-associated components in real forms", () => {
     // empty submit: refused by validation; nothing is added
     await notes.getByRole("button", { name: "Add note" }).click();
     await expect(notes.locator("wb--note-card")).toHaveCount(0);
+    // validation focused the invalid control (the field delegates focus to its input; without that Firefox logs
+    // "The invalid form control ... is not focusable" and focuses nothing)
+    expect(await title.evaluate((el) => el.shadowRoot.delegatesFocus)).toBe(true);
+    await expect(title).toBeFocused();
+    await expect(title.locator("input")).toBeFocused();
 
     await title.locator("input").fill("Standup");
     await body.locator("textarea").fill("Discuss the import map.\nSecond line.");

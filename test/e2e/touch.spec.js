@@ -27,17 +27,26 @@ const makeTouch = async (page, browserName) => {
   };
 };
 
+// locator.tap() in Playwright's Firefox delivered only pointer events for the first tap of a page (no touch
+// events, no click); touchscreen.tap() at the element's centre delivers the whole sequence in every engine.
+const tap = async (page, locator) => {
+  await locator.scrollIntoViewIfNeeded();
+  const box = await locator.boundingBox();
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+};
+
 test.describe("touch", () => {
   test.beforeEach(async ({ page }) => {
     await openApp(page);
+    await tap(page, page.locator("#status")); // a first touch on an inert spot
   });
 
   test("tapping the header and the window chrome works", async ({ page }) => {
-    await page.getByRole("button", { name: "Grid" }).tap();
+    await tap(page, page.getByRole("button", { name: "Grid" }));
     await expect(page.locator("#status")).toContainText("layout grid");
-    await page.getByRole("button", { name: "Float window: Data" }).tap();
+    await tap(page, page.getByRole("button", { name: "Float window: Data" }));
     await expect.poll(async () => (await wmState(page)).windows.data.mode).toBe("floating");
-    await page.getByRole("button", { name: "Open command palette" }).tap();
+    await tap(page, page.getByRole("button", { name: "Open command palette" }));
     await expect(page.locator("[data-wm-palette]")).toBeVisible();
   });
 

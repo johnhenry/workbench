@@ -20,8 +20,8 @@
     "test:smoke": "playwright test --config playwright.smoke.config.js"
   },
   "dependencies": {
-    "@johnhenry/html-modules": "github:johnhenry/html-modules#953f40b4a4ac64608b01b16d07524d8aeb784d49",
-    "@johnhenry/mport": "github:johnhenry/mport#e9a9c0beb7e4730a549ecc38ca3538a1facb9adc",
+    "@johnhenry/html-modules": "github:johnhenry/html-modules#c411acdb097c23e660e4305964ed146ab2946a74",
+    "@johnhenry/mport": "github:johnhenry/mport#f9fd4f00b862e1c6e015a921e4c7a472f39bebc4",
     "@johnhenry/window-algebra": "github:johnhenry/window-algebra#c8f1e3f495e2829e1e2eec81f1c7c77d53caa21d"
   },
   "devDependencies": {
