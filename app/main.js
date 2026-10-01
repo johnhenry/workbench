@@ -4,8 +4,8 @@
 //   mport           generated the import map these bare specifiers resolve through (scripts/build.mjs)
 import "@johnhenry/html-modules/browser";
 import { createState, createWindowManager } from "@johnhenry/window-algebra";
-import { attachSync, createPalette } from "@johnhenry/window-algebra/browser";
-import { defineWindowAlgebraElement } from "@johnhenry/window-algebra/element";
+import { attachSync } from "@johnhenry/window-algebra/browser";
+import { defineCommandPaletteElement, defineWindowAlgebraElement } from "@johnhenry/window-algebra/element";
 import { syncChrome, windowSurface } from "./chrome.js";
 import { createStore, read, WM_KEY, write } from "./store.js";
 import { TOOLS, mountTool } from "./tools/index.js";
@@ -57,7 +57,8 @@ syncChrome(wm, stage);
 
 // --- command palette (Ctrl/Cmd+Shift+P) ----------------------------------------------------------
 // injectStyles: false because the CSP forbids <style>; the palette's CSS is in /styles/generated/wa.css.
-const palette = createPalette({ wm, injectStyles: false });
+defineCommandPaletteElement();
+const palette = $("wa-palette").configure({ wm, injectStyles: false });
 
 // --- cross-tab sync ----------------------------------------------------------------------------
 const syncEl = $("#sync");
