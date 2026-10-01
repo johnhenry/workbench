@@ -41,12 +41,22 @@ test.describe("touch", () => {
     await tap(page, page.locator("#status")); // a first touch on an inert spot
   });
 
-  test("tapping the header and the window chrome works", async ({ page, browserName }) => {
-    test.skip(browserName === "firefox", "investigating: Playwright Firefox tap on a kit--button yields pointer events only");
-    await tap(page, page.getByRole("button", { name: "Grid" }));
-    await expect(page.locator("#status")).toContainText("layout grid");
+  test("tapping the window chrome works in every engine", async ({ page }) => {
     await tap(page, page.getByRole("button", { name: "Float window: Data" }));
     await expect.poll(async () => (await wmState(page)).windows.data.mode).toBe("floating");
+    await tap(page, page.getByRole("button", { name: "Dock window: Data" }));
+    await expect.poll(async () => (await wmState(page)).windows.data.mode).not.toBe("floating");
+  });
+
+  test("tapping the html-modules buttons works (Firefox: see the note)", async ({ page, browserName }) => {
+    // In Playwright's Firefox a tap whose hit target is the <slot> inside a <button> in a shadow root delivers
+    // pointerdown/pointerup and nothing else (no touch events, no click). Measured with plain shadow-DOM buttons
+    // that have no html-modules or window-algebra code, so it is the engine or its automation, not this app.
+    // A <button> whose text is a direct child of the shadow root (no <slot>) is tapped fine. Taps on kit--button
+    // are therefore asserted in Chromium and WebKit only.
+    test.skip(browserName === "firefox", "touch tap on a <slot> inside a shadow <button> produces only pointer events in Playwright's Firefox");
+    await tap(page, page.getByRole("button", { name: "Grid" }));
+    await expect(page.locator("#status")).toContainText("layout grid");
     await tap(page, page.getByRole("button", { name: "Open command palette" }));
     await expect(page.locator("[data-wm-palette]")).toBeVisible();
   });
