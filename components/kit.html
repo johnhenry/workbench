@@ -42,6 +42,29 @@
   </template>
 </html-export>
 
+<!-- A real submit button: form-associated with form-role="submit". Click, Enter and Space submit the form, it is the form's
+     default button (so Enter in a field submits through it), and it is the submit event's `submitter`. -->
+<html-export name="submit-button" form-associated form-role="submit" delegates-focus props="variant">
+  <style>
+    :host { display: inline-block; }
+    .btn {
+      font: inherit; font-size: 0.875rem; line-height: 1.2; cursor: pointer;
+      padding: 0.35rem 0.75rem; border-radius: var(--wa-radius-sm, 4px);
+      border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6);
+      background: var(--wa-color-surface-raised, #fff); color: var(--wa-color-fg, #14171c);
+    }
+    .btn:hover { background: var(--wa-color-accent-soft, rgb(29 78 216 / 0.12)); }
+    .btn:focus-visible {
+      outline: var(--wa-focus-ring-width, 3px) solid var(--wa-focus-ring-color, #1d4ed8);
+      outline-offset: var(--wa-focus-ring-offset, 2px);
+    }
+    :host([variant="primary"]) .btn { background: var(--wa-color-accent, #1d4ed8); color: var(--wa-color-accent-fg, #fff); border-color: transparent; }
+  </style>
+  <template>
+    <button part="button" class="btn" type="button"><slot></slot></button>
+  </template>
+</html-export>
+
 <!-- Form-associated: a real form control. It takes part in FormData, :invalid, reset and required. -->
 <html-export name="field" form-associated form-control="input" props="placeholder">
   <style>

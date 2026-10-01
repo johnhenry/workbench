@@ -7,7 +7,7 @@ body {
   font-family: var(--wb-font, system-ui, sans-serif); font-size: 16px;
   background: var(--wa-color-bg); color: var(--wa-color-fg);
 }
-kit--button:not(:defined), kit--field:not(:defined) { visibility: hidden; }
+kit--button:not(:defined), kit--submit-button:not(:defined), kit--field:not(:defined) { visibility: hidden; }
 
 .skip-link { position: absolute; left: 0.5rem; top: -4rem; z-index: 100; padding: 0.4rem 0.8rem; background: var(--wa-color-accent); color: var(--wa-color-accent-fg); border-radius: var(--wa-radius-sm); }
 .skip-link:focus { top: 0.5rem; }
@@ -21,32 +21,6 @@ main { min-height: 0; padding: 0; }
 wa-stage { display: block; height: 100%; min-height: 20rem; }
 
 .statusbar { display: flex; justify-content: space-between; gap: 1rem; padding: 0.3rem 0.75rem; font-size: 0.8125rem; color: var(--wa-color-fg-muted); background: var(--wa-titlebar-bg); border-top: var(--wa-border-width) solid var(--wa-titlebar-border); }
-
-/* Window chrome */
-.wb-win { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; background: var(--wa-color-surface); color: var(--wa-color-fg); border: var(--wa-border-width) solid var(--wa-color-border); border-radius: var(--wa-radius-md); overflow: hidden; }
-wm-view[data-focused] .wb-win { border-color: var(--wa-color-accent); }
-wm-view[data-mode="floating"] { box-shadow: var(--wa-shadow-window); border-radius: var(--wa-radius-md); }
-.wb-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0.4rem 0.2rem 0.75rem; background: var(--wa-titlebar-bg); color: var(--wa-titlebar-fg); border-bottom: var(--wa-border-width) solid var(--wa-titlebar-border); cursor: grab; user-select: none; touch-action: none; }
-wm-view[data-focused] .wb-bar { background: var(--wa-titlebar-active-bg); }
-.wb-title { flex: 1 1 0; min-width: 0; margin: 0; font-size: 0.875rem; font-weight: var(--wa-titlebar-font-weight, 600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wb-actions { display: flex; gap: 0.15rem; }
-.wb-btn { font: inherit; min-width: 1.75rem; height: 1.75rem; border: 0; border-radius: var(--wa-radius-sm); background: transparent; color: inherit; cursor: pointer; }
-.wb-btn:hover { background: var(--wa-color-accent-soft); }
-.wb-btn:focus-visible { outline: var(--wa-focus-ring-width) solid var(--wa-focus-ring-color); outline-offset: 0; }
-.wb-btn[aria-pressed="true"] { background: var(--wa-color-accent-soft); }
-.wb-body { min-height: 0; overflow: auto; }
-.wb-body:focus-visible { outline: var(--wa-focus-ring-width) solid var(--wa-focus-ring-color); outline-offset: -3px; }
-
-.wb-grip { position: absolute; z-index: 5; touch-action: none; }
-wm-view:not([data-mode="floating"]) .wb-grip { display: none; }
-.wb-grip[data-wm-handle="resize-n"] { top: -3px; left: 8px; right: 8px; height: 7px; cursor: ns-resize; }
-.wb-grip[data-wm-handle="resize-s"] { bottom: -3px; left: 8px; right: 8px; height: 7px; cursor: ns-resize; }
-.wb-grip[data-wm-handle="resize-e"] { right: -3px; top: 8px; bottom: 8px; width: 7px; cursor: ew-resize; }
-.wb-grip[data-wm-handle="resize-w"] { left: -3px; top: 8px; bottom: 8px; width: 7px; cursor: ew-resize; }
-.wb-grip[data-wm-handle="resize-ne"] { right: -3px; top: -3px; width: 12px; height: 12px; cursor: nesw-resize; }
-.wb-grip[data-wm-handle="resize-nw"] { left: -3px; top: -3px; width: 12px; height: 12px; cursor: nwse-resize; }
-.wb-grip[data-wm-handle="resize-se"] { right: -3px; bottom: -3px; width: 14px; height: 14px; cursor: nwse-resize; }
-.wb-grip[data-wm-handle="resize-sw"] { left: -3px; bottom: -3px; width: 12px; height: 12px; cursor: nesw-resize; }
 
 @media (max-width: 40rem) {
   .topbar { padding: 0.4rem 0.5rem; }

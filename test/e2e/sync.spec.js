@@ -6,6 +6,20 @@ const open = async (context) => {
   return page;
 };
 
+test.describe("the stage owns the sync handle", () => {
+  test("stage.sync is the attachSync handle, and the tab count reads stage.sync.peers()", async ({ context }) => {
+    const a = await open(context);
+    const shape = await a.evaluate(() => {
+      const sync = document.querySelector("#stage").sync;
+      return { same: sync === window.workbench.sync, peers: sync.peers().length, api: ["peers", "flush", "detach"].every((k) => typeof sync[k] === "function") };
+    });
+    expect(shape).toEqual({ same: true, peers: 0, api: true });
+    const b = await open(context);
+    await expect.poll(() => a.evaluate(() => document.querySelector("#stage").sync.peers().length)).toBe(1);
+    await expect(b.locator("#sync")).toHaveText("Tabs: 2");
+  });
+});
+
 test.describe("two tabs of one browser stay in step", () => {
   test("window changes cross over a BroadcastChannel; the tab count shows the peer", async ({ context }) => {
     const a = await open(context);

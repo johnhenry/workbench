@@ -4,9 +4,8 @@
 //   mport           generated the import map these bare specifiers resolve through (scripts/build.mjs)
 import "@johnhenry/html-modules/browser";
 import { createState, createWindowManager } from "@johnhenry/window-algebra";
-import { attachSync } from "@johnhenry/window-algebra/browser";
-import { defineCommandPaletteElement, defineWindowAlgebraElement } from "@johnhenry/window-algebra/element";
-import { syncChrome, windowSurface } from "./chrome.js";
+import { lazySurface } from "@johnhenry/window-algebra/browser";
+import { defineWindowAlgebraElement } from "@johnhenry/window-algebra/element";
 import { createStore, read, WM_KEY, write } from "./store.js";
 import { TOOLS, mountTool } from "./tools/index.js";
 import { applyTheme } from "./tools/settings.js";
@@ -38,44 +37,35 @@ const surfaceFor = (id) => {
   const win = wm.getState().windows[id];
   if (!win) return undefined;
   if (!surfaces.has(id)) {
-    surfaces.set(id, windowSurface({ id, title: win.title || id, mount: (body) => mountTool(id, win.title || id, body, { store, wm }) }));
+    // the stage's built-in chrome supplies the title bar, buttons and grips; the surface mounts into its body
+    surfaces.set(id, lazySurface((body) => mountTool(id, win.title || id, body, { store, wm })));
   }
   return surfaces.get(id);
 };
 
 // --- the stage: <wa-stage> renders, takes pointer, keyboard and touch input ---------------------
+// It also owns the window chrome, the command palette (Ctrl/Cmd+Shift+P) and cross-tab sync, and exposes
+// them as stage.palette and stage.sync.
 defineWindowAlgebraElement();
 const stage = $("#stage");
+const syncEl = $("#sync");
+const showPeers = () => {
+  const peers = stage.sync?.peers().length ?? 0;
+  syncEl.textContent = `Tabs: ${peers + 1}`;
+  syncEl.dataset.peers = String(peers);
+};
 stage.configure({
   wm,
   surfaceFor,
+  chrome: true, // title bar, buttons, grips: window-algebra's, themed by --wa-* tokens
+  // injectStyles: false because the CSP forbids <style>; the palette's CSS is in /styles/generated/wa.css.
+  palette: { injectStyles: false },
+  sync: { channel: "workbench", onSync: showPeers },
   // keyboard: Alt+Shift+Arrows move/resize a floating window, F6 cycles windows. touch: pinch resizes a
   // floating window, and a long press on any window floats or docks it. announce: aria-live narration.
   input: { keyboard: true, touch: { pinch: true, swipe: { tabs: true }, contextMenu: "window/toggle-floating" }, announce: true },
 });
-syncChrome(wm, stage);
-
-// --- command palette (Ctrl/Cmd+Shift+P) ----------------------------------------------------------
-// injectStyles: false because the CSP forbids <style>; the palette's CSS is in /styles/generated/wa.css.
-defineCommandPaletteElement();
-const palette = $("wa-palette").configure({ wm, injectStyles: false });
-
-// --- cross-tab sync ----------------------------------------------------------------------------
-const syncEl = $("#sync");
-const sync = attachSync({
-  wm,
-  channel: "workbench",
-  onSync: () => {
-    const peers = sync.peers().length;
-    syncEl.textContent = `Tabs: ${peers + 1}`;
-    syncEl.dataset.peers = String(peers);
-  },
-});
-setInterval(() => {
-  const peers = sync.peers().length;
-  syncEl.textContent = `Tabs: ${peers + 1}`;
-  syncEl.dataset.peers = String(peers);
-}, 500);
+setInterval(showPeers, 500); // peers() changes when a tab closes, which fires no onSync
 
 // --- header: open tools, switch layout, palette, title -----------------------------------------
 const openTool = (id) => {
@@ -93,7 +83,7 @@ document.querySelector(".actions").addEventListener("click", (event) => {
   if (!el) return;
   if (el.dataset.open) openTool(el.dataset.open);
   else if (el.dataset.layout) wm.setLayout({ type: el.dataset.layout, ...(el.dataset.layout === "master-stack" ? { ratio: 0.55 } : {}) });
-  else palette.open();
+  else stage.palette.open();
 });
 
 const title = $("#app-title");
@@ -115,7 +105,7 @@ addEventListener("storage", (event) => { if (event.key === "workbench:data") app
 store.subscribe((data) => applyTheme(data.settings.theme));
 
 // A handle for the end-to-end tests and for poking around in the console.
-window.workbench = { wm, store, stage, palette, sync };
+window.workbench = { wm, store, stage, get palette() { return stage.palette; }, get sync() { return stage.sync; } };
 document.documentElement.dataset.ready = "true";
 Promise.all([...document.querySelectorAll("html-import")].map((el) => el.ready)).then(
   () => { document.documentElement.dataset.components = "ready"; },

@@ -27,7 +27,8 @@ test.describe("windows: open, move, dock", () => {
     await page.getByRole("button", { name: "Float window: Tasks" }).click();
     await expect.poll(async () => (await wmState(page)).windows[id].mode).toBe("floating");
     await expect(view(page, id)).toHaveAttribute("data-mode", "floating");
-    await expect(page.getByRole("button", { name: "Dock window: Tasks" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("button", { name: "Tile window: Tasks" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Float window: Tasks" })).toBeHidden();
     const before = await view(page, id).boundingBox();
 
     // drag the title bar: a floating window follows the pointer
@@ -45,7 +46,7 @@ test.describe("windows: open, move, dock", () => {
     expect(Math.abs(placement.x - (after.x - (await page.locator("#stage").boundingBox()).x))).toBeLessThan(40);
 
     // dock it back into the layout
-    await page.getByRole("button", { name: "Dock window: Tasks" }).click();
+    await page.getByRole("button", { name: "Tile window: Tasks" }).click();
     await expect.poll(async () => (await wmState(page)).windows[id].mode).not.toBe("floating");
     await expect(view(page, id)).not.toHaveAttribute("data-mode", "floating");
     expect(await order(page)).toContain(id);
@@ -100,7 +101,7 @@ test.describe("windows: open, move, dock", () => {
     await handle(page, "settings").click({ position: { x: 20, y: 10 } });
     await expect.poll(async () => (await wmState(page)).focus.window).toBe("settings");
     const before = (await wmState(page)).windows.settings.placement;
-    await view(page, "settings").locator(".wb-body").focus();
+    await view(page, "settings").locator("[data-wa-chrome-body]").focus();
     for (let i = 0; i < 3; i++) await page.keyboard.press("Alt+Shift+ArrowRight");
     await expect.poll(async () => (await wmState(page)).windows.settings.placement.x).toBeGreaterThan(before.x + 20);
     await page.keyboard.press("Alt+Shift+ArrowDown");

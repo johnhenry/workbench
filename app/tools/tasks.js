@@ -13,12 +13,6 @@ export async function mountTasks(host, { store }) {
     store.addTask({ label, due: String(data.get("due") ?? "") });
     form.reset();
   });
-  root.addEventListener("click", (event) => {
-    if (actionOf(event)?.dataset.action === "submit") form.requestSubmit();
-  });
-  root.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && event.target.localName === "kit--field") form.requestSubmit();
-  });
   host.addEventListener("click", (event) => {
     const action = actionOf(event)?.dataset.action;
     if (action === "toggle") store.toggleTask(idOf(event));

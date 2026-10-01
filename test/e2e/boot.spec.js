@@ -18,7 +18,7 @@ test("every tool window is made of html-modules components, and modules import a
   expect(tags.filter(([, defined]) => !defined)).toEqual([]);
   // kit is imported by each tool module (module-imports-module): a button inside a tool's shadow root is upgraded
   for (const id of ["notes", "tasks", "data", "settings"]) {
-    const upgraded = await view(page, id).locator("kit--button, kit--stat").first().evaluate((el) => el.matches(":defined") && Boolean(el.shadowRoot));
+    const upgraded = await view(page, id).locator("kit--button, kit--submit-button, kit--stat").first().evaluate((el) => el.matches(":defined") && Boolean(el.shadowRoot));
     expect(upgraded, id).toBe(true);
   }
   // the stylesheet export was adopted into the document

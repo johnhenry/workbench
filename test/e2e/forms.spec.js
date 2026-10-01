@@ -19,7 +19,7 @@ test.describe("forms: form-associated components in real forms", () => {
       names: [...f.elements].map((e) => `${e.localName}:${e.name}`),
       titleValid: f.elements.title.checkValidity(),
     }));
-    expect(shape.names).toEqual(["kit--field:title", "kit--area:body"]);
+    expect(shape.names).toEqual(["kit--field:title", "kit--area:body", "kit--submit-button:"]); // the button is a form element too
     expect(shape.titleValid).toBe(false); // required, empty
 
     // empty submit: refused by validation; nothing is added
@@ -46,11 +46,41 @@ test.describe("forms: form-associated components in real forms", () => {
     await expect(body.locator("textarea")).toHaveValue("");
   });
 
-  test("Enter in a field submits the form", async ({ page }) => {
+  test("Enter in a field submits the form, and the real submit-button component is the submitter (no app glue)", async ({ page }) => {
     const notes = view(page, "notes");
+    const button = notes.locator("kit--submit-button");
+    // html-modules' form-role="submit": a form-associated component that is the form's default button
+    expect(await button.evaluate((el) => ({ type: el.type, form: el.form?.getAttribute("aria-label"), role: el.internals?.role ?? null }))).toMatchObject({ type: "submit", form: "New note" });
+    // it adds nothing to FormData
     await notes.locator('kit--field[name="title"] input').fill("From the keyboard");
-    await page.keyboard.press("Enter");
+    expect(await notes.locator("form").evaluate((f) => [...new FormData(f).keys()])).toEqual(["title", "body"]);
+    await notes.locator("form").evaluate((f) => {
+      window.__submitters = [];
+      f.addEventListener("submit", (e) => window.__submitters.push(e.submitter?.localName ?? null));
+    });
+    await notes.locator('kit--field[name="title"] input').press("Enter");
     await expect(notes.locator("wb--note-card h3")).toHaveText("From the keyboard");
+    expect(await page.evaluate(() => window.__submitters)).toEqual(["kit--submit-button"]);
+    // an empty required field: Enter is refused by validation, like a native form
+    await notes.locator('kit--field[name="title"] input').press("Enter");
+    await expect(notes.locator("wb--note-card")).toHaveCount(1);
+  });
+
+  test("the submit button works from the keyboard (Tab to it, Space) and is not a nested interactive control", async ({ page }) => {
+    const tasks = view(page, "tasks");
+    await tasks.locator('kit--field[name="label"] input').fill("By keyboard");
+    await tasks.locator("kit--submit-button").focus();
+    await page.keyboard.press("Space");
+    await expect(tasks.locator("wb--task-item .label")).toHaveText("By keyboard");
+    // its template holds a native <button>, so the host must not also be role=button (axe: nested-interactive)
+    expect(await tasks.locator("kit--submit-button").evaluate((el) => el.internals?.role ?? null)).not.toBe("button");
+  });
+
+  test("the app has no form glue: nothing calls requestSubmit()", async ({ request }) => {
+    for (const file of ["notes", "tasks", "settings"]) {
+      const source = await (await request.get(`/app/tools/${file}.js`)).text();
+      expect(source, file).not.toContain("requestSubmit");
+    }
   });
 
   test("tasks: a text field and a date field, and the due date is formatted by dayjs from the CDN", async ({ page }) => {

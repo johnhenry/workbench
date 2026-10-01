@@ -9,16 +9,15 @@
 //   importmap.json           the import map on its own, for inspection
 //   styles/generated/wa.css  window-algebra's theme + rules + palette CSS as a file, so the CSP needs no
 //                            'unsafe-inline' for <style> (the library injects them as <style> by default)
-import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import {
   createRegistry, createRouter, custom, esmSh, local,
-  renderImportMap, renderModulePreload,
+  renderImportMapCsp, renderModulePreload,
 } from "@johnhenry/mport";
+import { installedRegistry } from "@johnhenry/mport/node";
 import { BASE_CSS } from "@johnhenry/window-algebra/css";
 import { PALETTE_CSS } from "@johnhenry/window-algebra/browser";
-import { localRegistry } from "./local-registry.mjs";
 import { offlineFetch } from "./offline-fetch.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -45,7 +44,7 @@ const lock = !RELOCK && existsSync(LOCK) ? JSON.parse(await readFile(LOCK, "utf8
 const router = createRouter(
   {
     // The three libraries are installed from git, so they are not on npm: serve them from our own
-    // node_modules (local()), and answer mport's version/entry lookups from the installed package.json.
+    // node_modules (local()); installedRegistry() answers version/entry lookups from the installed package.json.
     "@johnhenry/*": local({ base: "/node_modules/" }),
     // The app's own HTML modules, as a prefix mapping: <html-import src="@workbench/ui/kit.html">.
     "@workbench/*": custom("/components/{path}", { name: "app", build: "app" }),
@@ -56,7 +55,7 @@ const router = createRouter(
     lock,
     probe: "none", // a build-time mapping: no HEAD request per candidate
     fetch,
-    registry: localRegistry({ root: new URL("node_modules/", root), fallback: createRegistry({ fetch }) }),
+    registry: installedRegistry({ root: new URL("node_modules/", root), fallback: createRegistry({ fetch }) }),
   },
 );
 
@@ -64,26 +63,14 @@ const { importMap, lock: newLock, graph } = await router.build(SPECIFIERS, { gra
 
 // --- CSP -----------------------------------------------------------------------------------------
 // The import map is inline, so script-src needs its hash (a static site has no per-request nonce).
-const mapHtml = renderImportMap(importMap);
-const mapBody = mapHtml.replace(/^<script[^>]*>/, "").replace(/<\/script>\s*$/, "");
-const mapHash = `sha256-${createHash("sha256").update(mapBody, "utf8").digest("base64")}`;
+// renderImportMapCsp() returns the tag and the hash of exactly the text inside it.
+const { html: mapHtml, hash: mapHash } = await renderImportMapCsp(importMap);
 const cdnOrigins = [...new Set(Object.values(importMap.imports).filter((u) => /^https?:/.test(u)).map((u) => new URL(u).origin))];
-
-// Chromium evaluates style-src for the <style> elements in the inert document html-modules parses each
-// module into, and logs a CSP error per element (README, finding H3). The CSS is static, so allow exactly those
-// bytes by hash instead of loosening style-src with 'unsafe-inline'.
-const styleHashes = [];
-for (const file of (await readdir(new URL("components/", root))).filter((f) => f.endsWith(".html"))) {
-  const source = await readFile(new URL(`components/${file}`, root), "utf8");
-  for (const [, css] of source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)) {
-    styleHashes.push(`'sha256-${createHash("sha256").update(css, "utf8").digest("base64")}'`);
-  }
-}
 
 const csp = [
   "default-src 'none'",
-  `script-src 'self' '${mapHash}' ${cdnOrigins.join(" ")}`.trim(),
-  `style-src 'self' ${[...new Set(styleHashes)].join(" ")}`,
+  `script-src 'self' ${mapHash} ${cdnOrigins.join(" ")}`.trim(),
+  "style-src 'self'",
   "connect-src 'self'",
   "img-src 'self' data:",
   "base-uri 'none'",

@@ -26,10 +26,10 @@ test.describe("theming (light and dark through the --wa-* tokens)", () => {
     await openApp(page);
     const measure = () => page.evaluate(() => {
       const tool = document.querySelector('wm-view[data-view="notes"] wb--notes-tool').shadowRoot;
-      const button = tool.querySelector("kit--button").shadowRoot.querySelector("button");
+      const button = tool.querySelector("kit--submit-button").shadowRoot.querySelector("button");
       const field = tool.querySelector("kit--field").shadowRoot.querySelector("input");
       return {
-        win: getComputedStyle(document.querySelector('wm-view[data-view="tasks"] .wb-win')).backgroundColor,
+        win: getComputedStyle(document.querySelector('wm-view[data-view="tasks"] [data-wa-chrome]')).backgroundColor,
         button: getComputedStyle(button).color,
         field: getComputedStyle(field).backgroundColor,
       };

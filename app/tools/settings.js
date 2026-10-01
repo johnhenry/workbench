@@ -1,4 +1,4 @@
-import { actionOf, setAttr, shadowOf } from "../dom.js";
+import { setAttr, shadowOf } from "../dom.js";
 
 export const applyTheme = (theme) => {
   const root = document.documentElement;
@@ -12,14 +12,10 @@ export async function mountSettings(host, { store, wm }) {
   const hint = root.querySelector(".hint");
 
   root.addEventListener("click", (event) => {
-    const el = actionOf(event) ?? event.composedPath().find((n) => n instanceof Element && n.dataset?.setting);
-    if (el?.dataset.action === "submit") return form.requestSubmit();
+    const el = event.composedPath().find((n) => n instanceof Element && n.dataset?.setting);
     const { setting, value } = el?.dataset ?? {};
     if (setting === "theme") store.setSetting("theme", value);
     if (setting === "direction") wm.dispatch({ type: "config/set", direction: value });
-  });
-  root.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && event.target.localName === "kit--field") form.requestSubmit();
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();

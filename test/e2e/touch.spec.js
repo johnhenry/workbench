@@ -44,7 +44,7 @@ test.describe("touch", () => {
   test("tapping the window chrome works in every engine", async ({ page }) => {
     await tap(page, page.getByRole("button", { name: "Float window: Data" }));
     await expect.poll(async () => (await wmState(page)).windows.data.mode).toBe("floating");
-    await tap(page, page.getByRole("button", { name: "Dock window: Data" }));
+    await tap(page, page.getByRole("button", { name: "Tile window: Data" }));
     await expect.poll(async () => (await wmState(page)).windows.data.mode).not.toBe("floating");
   });
 
@@ -77,7 +77,7 @@ test.describe("touch", () => {
 
   test("a long press on a window floats it, and another docks it again", async ({ page, browserName }) => {
     const touch = await makeTouch(page, browserName);
-    const body = await view(page, "data").locator(".wb-win").boundingBox();
+    const body = await view(page, "data").locator("[data-wa-chrome]").boundingBox();
     const [x, y] = [body.x + body.width / 2, body.y + body.height - 8]; // empty space inside the window, not a control
     const press = async () => {
       await touch.start([[x, y]]);
@@ -86,7 +86,7 @@ test.describe("touch", () => {
     };
     await press();
     await expect.poll(async () => (await wmState(page)).windows.data.mode).toBe("floating");
-    const floating = await view(page, "data").locator(".wb-win").boundingBox();
+    const floating = await view(page, "data").locator("[data-wa-chrome]").boundingBox();
     const [fx, fy] = [floating.x + floating.width / 2, floating.y + floating.height - 8];
     await touch.start([[fx, fy]]);
     await page.waitForTimeout(800);

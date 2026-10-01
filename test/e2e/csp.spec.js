@@ -18,6 +18,23 @@ test.describe("strict CSP with Trusted Types", () => {
     expect(csp).toContain(`'sha256-${hash}'`);
   });
 
+  test("style-src is just 'self': no hashes, no 'unsafe-inline', and no style-src-elem report in any engine (html-modules#4)", async ({ page }) => {
+    await openApp(page);
+    const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute("content");
+    expect(csp).toContain("style-src 'self';");
+    expect(csp).not.toMatch(/style-src[^;]*sha256/);
+    // every component module's <style> was parsed and stamped under that policy; a window that opens later too
+    await page.getByRole("button", { name: "Float window: Tasks" }).click();
+    await page.keyboard.press("ControlOrMeta+Shift+P");
+    await page.keyboard.press("Escape");
+    const reports = await page.evaluate(() => window.__violations.filter((v) => /^style-src/.test(v)));
+    expect(reports).toEqual([]);
+    // ... and the styles are really applied (a component's own <style> reached the shadow root)
+    const padding = await page.locator("wb--notes-tool").first().evaluate((el) => getComputedStyle(el).paddingTop);
+    expect(padding).not.toBe("0px");
+    expect(await page.locator("style").count()).toBe(0);
+  });
+
   test("nothing violated it while the app booted and ran", async ({ page }) => {
     await openApp(page);
     await page.getByRole("button", { name: "Float window: Tasks" }).click();

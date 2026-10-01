@@ -23,8 +23,18 @@ test.describe("command palette", () => {
     await expect(dialog(page)).toBeHidden();
   });
 
-  test("the Commands button opens it too", async ({ page }) => {
+  test("the Commands button opens it through stage.palette (the stage's own handle, no separate <wa-palette>)", async ({ page }) => {
+    expect(await page.locator("wa-palette").count()).toBe(0);
+    expect(await page.evaluate(() => document.querySelector("#stage").palette === window.workbench.palette)).toBe(true);
+    expect(await page.evaluate(() => document.querySelector("#stage").palette.isOpen)).toBe(false);
     await page.getByRole("button", { name: "Open command palette" }).click();
+    await expect(dialog(page)).toBeVisible();
+    expect(await page.evaluate(() => document.querySelector("#stage").palette.isOpen)).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toBeHidden();
+    expect(await page.evaluate(() => document.querySelector("#stage").palette.isOpen)).toBe(false);
+    // and the stage handle opens it from script
+    await page.evaluate(() => document.querySelector("#stage").palette.open());
     await expect(dialog(page)).toBeVisible();
   });
 
