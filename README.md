@@ -11,9 +11,8 @@ from each other, **meet at the import map**.
 | [`@johnhenry/html-modules`](https://github.com/johnhenry/html-modules) | declarative Web Components in ordinary `.html` files | [opensource.johnhenry.me/html-modules](https://opensource.johnhenry.me/html-modules/) |
 | [`@johnhenry/window-algebra`](https://github.com/johnhenry/window-algebra) | a functional window manager: layouts, drag and dock, palette, sync | [opensource.johnhenry.me/window-algebra](https://opensource.johnhenry.me/window-algebra/) |
 
-The verdict, and every bug, gap and awkward API found on the way, is in [FINDINGS.md](FINDINGS.md).
-Short version: the claim holds. The import map is a real seam, and the page needs no bundler. The friction
-was in the details, and some of it is now fixed in the libraries.
+The claim holds: the import map is a real seam, and the page needs no bundler. The friction was in the details;
+[what was found](#findings) is listed below, and the bugs are fixed in the libraries.
 
 ## What it is
 
@@ -111,6 +110,35 @@ styles/app.css       the app's own CSS (generated/wa.css is window-algebra's, wr
 test/e2e/            Playwright specs;  test/fixtures/cdn/ recorded CDN bytes;  test/smoke/ real-CDN smoke
 mport.lock.json      mport's lockfile: exact dayjs version, build and the integrity of every CDN file
 ```
+
+## Findings
+
+Every bug, gap and awkward API met while building this. **Fixed** items are in the library's `main` (the sha is the
+fix, with a regression test; `package.json` pins a commit at or after it). **Issue** items are filed.
+
+| | Library | Finding | Status |
+| --- | --- | --- | --- |
+| M1 | mport | `build({ graph: true })` threw `TypeError: Invalid URL` when a `local()` module was in the build | fixed `0936131` |
+| M2 | mport | docs and example 12 printed `modulepreload` before the import map; Firefox then ignores the map | fixed `f5417e8` |
+| M3 | mport | `local()` cannot serve a package that is not on npm (it asks the registry for version and entry) | [issue #1](https://github.com/johnhenry/mport/issues/1); workaround [`scripts/local-registry.mjs`](scripts/local-registry.mjs) |
+| M4 | mport | no way to get the CSP hash of the inline import map (static sites cannot use a nonce) | [issue #2](https://github.com/johnhenry/mport/issues/2); workaround in [`build.mjs`](scripts/build.mjs) |
+| H1 | html-modules | an invalid `form-control` component could not be focused on submit (Firefox: console error, no message) | fixed `262fe1e` |
+| H2 | html-modules | `<html-import>` and friends are not hidden, so they become grid/flex items | fixed (docs) `262fe1e` |
+| H3 | html-modules | Chromium logs a `style-src-elem` CSP error per `<style>` in every module | [issue #4](https://github.com/johnhenry/html-modules/issues/4); the build hashes the styles into `style-src` |
+| H4 | html-modules | Enter does not submit a form of form-associated components; a component cannot be a submit button | [issue #5](https://github.com/johnhenry/html-modules/issues/5); `requestSubmit()` glue |
+| H5 | html-modules | no loops in templates; adopting a stylesheet and registering a namespace takes two imports | wontfix (documented design) |
+| W1 | window-algebra | palette: "new window" did not find "Open window" (keyword order) | fixed `a4307cf` |
+| W2 | window-algebra | `attachSync`: a closed tab stayed in `peers()` for ever | fixed `2d28804` |
+| W3 | window-algebra | `attachSync`: `peers()` was one-sided (a tab with no history never answered `hello`) | fixed `c8b415d` |
+| W4 | window-algebra | `BASE_CSS` and the palette inject `<style>`, blocked by a strict `style-src` | fixed (docs) `4c0c3c1`; CSS written to a file |
+| W5 | window-algebra | no built-in window chrome (title bar, buttons, grips): every app rewrites it | [issue #1](https://github.com/johnhenry/window-algebra/issues/1) |
+| W6 | window-algebra | `<wa-stage>` hides the `sync` and `palette` handles it creates | [issue #2](https://github.com/johnhenry/window-algebra/issues/2) |
+| W7 | window-algebra | `config.direction` is deliberately not synced between tabs | wontfix (documented design) |
+
+Notes on environments rather than libraries: `package-lock.json` records the git dependencies as `git+ssh://`, so CI
+rewrites that to https before `npm ci`; Firefox does not launch in the author's sandbox, so it runs in CI only; in
+Playwright's Firefox a touch tap on a `<slot>` inside a shadow `<button>` delivers only pointer events (measured with
+plain shadow-DOM buttons, so not library code), so taps on the kit buttons are asserted in Chromium and WebKit.
 
 ## License
 

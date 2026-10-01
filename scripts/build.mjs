@@ -70,7 +70,7 @@ const mapHash = `sha256-${createHash("sha256").update(mapBody, "utf8").digest("b
 const cdnOrigins = [...new Set(Object.values(importMap.imports).filter((u) => /^https?:/.test(u)).map((u) => new URL(u).origin))];
 
 // Chromium evaluates style-src for the <style> elements in the inert document html-modules parses each
-// module into, and logs a CSP error per element (FINDINGS.md). The CSS is static, so allow exactly those
+// module into, and logs a CSP error per element (README, finding H3). The CSS is static, so allow exactly those
 // bytes by hash instead of loosening style-src with 'unsafe-inline'.
 const styleHashes = [];
 for (const file of (await readdir(new URL("components/", root))).filter((f) => f.endsWith(".html"))) {
@@ -96,7 +96,7 @@ const csp = [
 
 // --- index.html ----------------------------------------------------------------------------------
 // The import map comes BEFORE the modulepreload links: an engine that has started a module load or
-// preload refuses a later import map (see FINDINGS.md).
+// preload refuses a later import map (README, finding M2).
 const template = await readFile(new URL("app/index.template.html", root), "utf8");
 const html = template
   .replace("<!--CSP-->", `<meta http-equiv="Content-Security-Policy" content="${csp}">`)
