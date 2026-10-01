@@ -1,0 +1,46 @@
+<!-- Tasks: a form with a required text field and a date field, and a list of task items. -->
+<html-import src="@workbench/ui/kit.html" as="kit"></html-import>
+
+<html-export name="tasks-tool" props="open:number done:number">
+  <style>
+    :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
+    form { display: grid; gap: 0.6rem; }
+    .fields { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 0.6rem; align-items: end; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .summary { display: flex; gap: 0.4rem; align-items: center; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+    .items { display: grid; gap: 0.35rem; margin-top: 0.9rem; }
+    .empty { margin: 0; color: var(--wb-muted, #4f5865); font-size: 0.875rem; }
+  </style>
+  <template>
+    <form part="form" aria-label="New task">
+      <div class="fields">
+        <kit--field name="label" required placeholder="Ship the workbench">Task</kit--field>
+        <kit--date-field name="due">Due</kit--date-field>
+      </div>
+      <div class="row">
+        <kit--button variant="primary" data-action="submit">Add task</kit--button>
+        <span class="summary" role="status"><kit--badge>{{open}} open</kit--badge><kit--badge>{{done}} done</kit--badge></span>
+      </div>
+    </form>
+    <section class="items" aria-label="Task list"><slot name="items"><p class="empty">Nothing to do.</p></slot></section>
+  </template>
+</html-export>
+
+<html-export name="task-item" props="label due pressed overdue:boolean">
+  <style>
+    :host { display: block; }
+    .task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0.5rem; align-items: center; padding: 0.35rem 0.5rem; border: var(--wa-border-width, 1px) solid var(--wa-color-border); border-radius: var(--wa-radius-md, 8px); background: var(--wa-color-surface-raised); }
+    .label { overflow-wrap: anywhere; }
+    :host([pressed="true"]) .label { text-decoration: line-through; color: var(--wb-muted, #4f5865); }
+    .due { font-size: 0.75rem; color: var(--wb-muted, #4f5865); white-space: nowrap; }
+    :host([overdue]) .due { color: var(--wa-color-danger, #c2372c); font-weight: 600; }
+  </style>
+  <template>
+    <div class="task">
+      <kit--button variant="icon" data-action="toggle" pressed="{{pressed}}" label="Mark {{label}} as done">Done</kit--button>
+      <span class="label">{{label}}</span>
+      <span class="due">{{due}}</span>
+      <kit--button variant="icon" data-action="delete" label="Delete task {{label}}">Delete</kit--button>
+    </div>
+  </template>
+</html-export>

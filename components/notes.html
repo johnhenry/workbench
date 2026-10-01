@@ -1,0 +1,45 @@
+<!-- Notes: a form (two form-associated fields) and a list of note cards. Imports the shared kit. -->
+<html-import src="@workbench/ui/kit.html" as="kit"></html-import>
+
+<html-export name="notes-tool" props="count:number">
+  <style>
+    :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
+    form { display: grid; gap: 0.6rem; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .count { font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+    .items { display: grid; gap: 0.5rem; margin-top: 0.9rem; }
+    .empty { margin: 0; color: var(--wb-muted, #4f5865); font-size: 0.875rem; }
+  </style>
+  <template>
+    <form part="form" aria-label="New note">
+      <kit--field name="title" required placeholder="What is it about?">Title</kit--field>
+      <kit--area name="body" placeholder="Write something">Note</kit--area>
+      <div class="row">
+        <kit--button variant="primary" data-action="submit">Add note</kit--button>
+        <span class="count" role="status">{{count}} saved</span>
+      </div>
+    </form>
+    <section class="items" aria-label="Saved notes"><slot name="items"><p class="empty">No notes yet.</p></slot></section>
+  </template>
+</html-export>
+
+<html-export name="note-card" props="heading body updated">
+  <style>
+    :host { display: block; }
+    article { padding: 0.6rem 0.75rem; border: var(--wa-border-width, 1px) solid var(--wa-color-border); border-radius: var(--wa-radius-md, 8px); background: var(--wa-color-surface-raised); }
+    header { display: flex; align-items: start; justify-content: space-between; gap: 0.5rem; }
+    h3 { margin: 0; font-size: 1rem; overflow-wrap: anywhere; }
+    .body { margin: 0.35rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9375rem; }
+    .meta { margin: 0.35rem 0 0; font-size: 0.75rem; color: var(--wb-muted, #4f5865); }
+  </style>
+  <template>
+    <article>
+      <header>
+        <h3>{{heading}}</h3>
+        <kit--button variant="icon" data-action="delete" label="Delete note {{heading}}">Delete</kit--button>
+      </header>
+      <p class="body">{{body}}</p>
+      <p class="meta">{{updated}}</p>
+    </article>
+  </template>
+</html-export>

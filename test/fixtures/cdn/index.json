@@ -1,0 +1,18 @@
+{
+  "https://esm.sh/dayjs@1.11.23/es2022/dayjs.mjs": {
+    "file": "e74738b77a6f919c.mjs",
+    "type": "application/javascript; charset=utf-8"
+  },
+  "https://esm.sh/dayjs@1.11.23/es2022/plugin/relativeTime.mjs": {
+    "file": "06fe72f0973fb16a.mjs",
+    "type": "application/javascript; charset=utf-8"
+  },
+  "https://esm.sh/dayjs@1.11.23/plugin/relativeTime?target=es2022": {
+    "file": "436d442d7f229ad1.mjs",
+    "type": "application/javascript; charset=utf-8"
+  },
+  "https://esm.sh/dayjs@1.11.23?target=es2022": {
+    "file": "5d970c62308f4a44.mjs",
+    "type": "application/javascript; charset=utf-8"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "lockfileVersion": 1,
+  "packages": {
+    "@johnhenry/html-modules/browser": {
+      "specifier": "@johnhenry/html-modules/browser",
+      "registry": "npm",
+      "name": "@johnhenry/html-modules",
+      "version": "0.0.0",
+      "path": "browser",
+      "entry": "src/browser.js",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/html-modules/src/browser.js"
+    },
+    "@johnhenry/html-modules/runtime": {
+      "specifier": "@johnhenry/html-modules/runtime",
+      "registry": "npm",
+      "name": "@johnhenry/html-modules",
+      "version": "0.0.0",
+      "path": "runtime",
+      "entry": "src/runtime.js",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/html-modules/src/runtime.js"
+    },
+    "@johnhenry/window-algebra": {
+      "specifier": "@johnhenry/window-algebra",
+      "registry": "npm",
+      "name": "@johnhenry/window-algebra",
+      "version": "0.0.0",
+      "entry": "src/index.mjs",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/window-algebra/src/index.mjs"
+    },
+    "@johnhenry/window-algebra/browser": {
+      "specifier": "@johnhenry/window-algebra/browser",
+      "registry": "npm",
+      "name": "@johnhenry/window-algebra",
+      "version": "0.0.0",
+      "path": "browser",
+      "entry": "src/browser/index.mjs",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/window-algebra/src/browser/index.mjs"
+    },
+    "@johnhenry/window-algebra/element": {
+      "specifier": "@johnhenry/window-algebra/element",
+      "registry": "npm",
+      "name": "@johnhenry/window-algebra",
+      "version": "0.0.0",
+      "path": "element",
+      "entry": "src/bindings/element.mjs",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/window-algebra/src/bindings/element.mjs"
+    },
+    "@workbench/ui": {
+      "specifier": "@workbench/ui/",
+      "registry": "npm",
+      "name": "@workbench/ui",
+      "build": "app",
+      "provider": "app",
+      "url": "/components/"
+    },
+    "dayjs@^1.11": {
+      "specifier": "dayjs@^1.11",
+      "registry": "npm",
+      "name": "dayjs",
+      "range": "^1.11",
+      "version": "1.11.23",
+      "build": "esm.sh",
+      "provider": "esm.sh",
+      "url": "https://esm.sh/dayjs@1.11.23?target=es2022",
+      "integrity": "sha384-eFvOsMJ5j7hf+muaDPbgE1gK4IMG6mh7xfCiz2p7UVdMOyjqXw9tASMXO/l2/by4"
+    },
+    "dayjs@^1.11/plugin/relativeTime": {
+      "specifier": "dayjs@^1.11/plugin/relativeTime",
+      "registry": "npm",
+      "name": "dayjs",
+      "range": "^1.11",
+      "version": "1.11.23",
+      "path": "plugin/relativeTime",
+      "build": "esm.sh",
+      "provider": "esm.sh",
+      "url": "https://esm.sh/dayjs@1.11.23/plugin/relativeTime?target=es2022",
+      "integrity": "sha384-9AsXsu+3IQoPbCGuFM2z0F/NsxDWu60JSQbHzFx+WWKAqpL/NhbcHBulw0PLJi+p"
+    }
+  },
+  "files": {
+    "https://esm.sh/dayjs@1.11.23/es2022/dayjs.mjs": "sha384-MZyYGInYSfCFw65y3Ap/oRSonokrsRylRYSbAmIculbq5lodAVny3KwQoDrfYGcX",
+    "https://esm.sh/dayjs@1.11.23/es2022/plugin/relativeTime.mjs": "sha384-cyC32pY6nX7HQCAOHyKVtZ9y46YwWrKV+nk1Cn5pB9haKeqipBts+e3IshIUDyKk",
+    "https://esm.sh/dayjs@1.11.23/plugin/relativeTime?target=es2022": "sha384-9AsXsu+3IQoPbCGuFM2z0F/NsxDWu60JSQbHzFx+WWKAqpL/NhbcHBulw0PLJi+p",
+    "https://esm.sh/dayjs@1.11.23?target=es2022": "sha384-eFvOsMJ5j7hf+muaDPbgE1gK4IMG6mh7xfCiz2p7UVdMOyjqXw9tASMXO/l2/by4"
+  }
+}

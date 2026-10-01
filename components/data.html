@@ -1,0 +1,35 @@
+<!-- Data: live numbers (data-bound stats), the import map this page runs on, and a window event log. -->
+<html-import src="@workbench/ui/kit.html" as="kit"></html-import>
+
+<html-export name="data-tool" props="windows:number tiled:number floating:number layout">
+  <style>
+    :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: 0.5rem; }
+    h3 { margin: 1rem 0 0.4rem; font-size: 0.9375rem; }
+    .layout { margin: 0.6rem 0 0; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+    .rows { display: grid; gap: 0.25rem; }
+    .empty { margin: 0; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+  </style>
+  <template>
+    <section class="stats" aria-label="Window statistics">
+      <kit--stat label="Windows" value="{{windows}}"></kit--stat>
+      <kit--stat label="Tiled" value="{{tiled}}"></kit--stat>
+      <kit--stat label="Floating" value="{{floating}}"></kit--stat>
+    </section>
+    <p class="layout">Layout: <kit--badge>{{layout}}</kit--badge></p>
+    <h3>Import map</h3>
+    <section class="rows" aria-label="Import map entries"><slot name="imports"><p class="empty">No import map.</p></slot></section>
+    <h3>Recent events</h3>
+    <section class="rows" aria-label="Recent window events"><slot name="events"><p class="empty">Nothing yet.</p></slot></section>
+  </template>
+</html-export>
+
+<html-export name="data-row" props="name detail tone">
+  <style>
+    :host { display: block; }
+    div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; align-items: baseline; font-size: 0.8125rem; padding: 0.2rem 0; border-bottom: var(--wa-border-width, 1px) solid var(--wa-color-border); }
+    .name { font-family: var(--wb-mono, monospace); overflow-wrap: anywhere; }
+    .detail { color: var(--wb-muted, #4f5865); text-align: end; overflow-wrap: anywhere; }
+  </style>
+  <template><div><span class="name">{{name}}</span><span class="detail">{{detail}} <kit--badge tone="{{tone}}">{{tone}}</kit--badge></span></div></template>
+</html-export>

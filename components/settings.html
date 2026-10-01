@@ -1,0 +1,43 @@
+<!-- Settings: choice groups built from kit buttons, and a form with a form-associated field. -->
+<html-import src="@workbench/ui/kit.html" as="kit"></html-import>
+
+<html-export name="settings-tool" props="owner">
+  <style>
+    :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
+    fieldset { border: var(--wa-border-width, 1px) solid var(--wa-color-border); border-radius: var(--wa-radius-md, 8px); margin: 0 0 0.75rem; padding: 0.5rem 0.75rem 0.75rem; }
+    legend { font-size: 0.8125rem; color: var(--wb-muted, #4f5865); padding: 0 0.25rem; }
+    .group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    form { display: grid; gap: 0.6rem; }
+    .hint { margin: 0; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+  </style>
+  <template>
+    <fieldset>
+      <legend>Theme</legend>
+      <div class="group">
+        <kit--button data-setting="theme" data-value="system" pressed="false">System</kit--button>
+        <kit--button data-setting="theme" data-value="light" pressed="false">Light</kit--button>
+        <kit--button data-setting="theme" data-value="dark" pressed="false">Dark</kit--button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Direction</legend>
+      <div class="group">
+        <kit--button data-setting="direction" data-value="ltr" pressed="false">Left to right</kit--button>
+        <kit--button data-setting="direction" data-value="rtl" pressed="false">Right to left</kit--button>
+      </div>
+    </fieldset>
+    <form part="form" aria-label="Profile">
+      <kit--field name="owner" required placeholder="Ada" value="{{owner}}">Your name</kit--field>
+      <div><kit--button variant="primary" data-action="submit">Save</kit--button></div>
+      <p class="hint" role="status"></p>
+    </form>
+  </template>
+</html-export>
+
+<html-export name="scratch" props="heading">
+  <style>
+    :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
+    p { margin: 0; color: var(--wb-muted, #4f5865); }
+  </style>
+  <template><p>{{heading}} is an empty window. Close it from its title bar, or from the command palette.</p></template>
+</html-export>

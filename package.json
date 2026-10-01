@@ -1,0 +1,31 @@
+{
+  "name": "workbench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A small workbench app that proves mport, html-modules and window-algebra meet at the import map.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:offline": "node scripts/build.mjs --offline",
+    "record:cdn": "node scripts/record-cdn.mjs",
+    "serve": "node scripts/serve.mjs",
+    "start": "npm run build && npm run serve",
+    "test": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:smoke": "playwright test --config playwright.smoke.config.js"
+  },
+  "dependencies": {
+    "@johnhenry/html-modules": "github:johnhenry/html-modules#953f40b4a4ac64608b01b16d07524d8aeb784d49",
+    "@johnhenry/mport": "github:johnhenry/mport#e9a9c0beb7e4730a549ecc38ca3538a1facb9adc",
+    "@johnhenry/window-algebra": "github:johnhenry/window-algebra#ce49ba21fe06b891985250c149ede54f20c2c187"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0"
+  }
+}

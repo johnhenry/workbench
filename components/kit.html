@@ -1,0 +1,116 @@
+<!--
+  The shared component module. Every tool module imports this one
+  (<html-import src="@workbench/ui/kit.html" as="kit">): modules importing modules.
+
+  It reads window-algebra's --wa-* theme tokens, so light/dark/high-contrast and the
+  settings window's choices reach every component without any code.
+-->
+
+<!-- A stylesheet export: the page adopts it into the document (<html-binding export="tokens" adopt>). -->
+<html-export name="tokens">
+  <style>
+    :root {
+      --wb-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --wb-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --wb-gap: var(--wa-space-md, 12px);
+      --wb-muted: var(--wa-color-fg-muted, #4f5865);
+    }
+  </style>
+</html-export>
+
+<html-export name="button" delegates-focus props="variant label pressed">
+  <style>
+    :host { display: inline-block; }
+    .btn {
+      font: inherit; font-size: 0.875rem; line-height: 1.2; cursor: pointer;
+      padding: 0.35rem 0.75rem; border-radius: var(--wa-radius-sm, 4px);
+      border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6);
+      background: var(--wa-color-surface-raised, #fff); color: var(--wa-color-fg, #14171c);
+    }
+    .btn:hover { background: var(--wa-color-accent-soft, rgb(29 78 216 / 0.12)); }
+    .btn:focus-visible {
+      outline: var(--wa-focus-ring-width, 3px) solid var(--wa-focus-ring-color, #1d4ed8);
+      outline-offset: var(--wa-focus-ring-offset, 2px);
+    }
+    .btn[aria-pressed="true"] { border-color: var(--wa-color-accent, #1d4ed8); background: var(--wa-color-accent-soft, rgb(29 78 216 / 0.12)); font-weight: 600; }
+    :host([variant="primary"]) .btn { background: var(--wa-color-accent, #1d4ed8); color: var(--wa-color-accent-fg, #fff); border-color: transparent; }
+    :host([variant="danger"]) .btn { color: var(--wa-color-danger, #c2372c); }
+    :host([variant="icon"]) .btn { padding: 0.15rem 0.5rem; }
+  </style>
+  <template>
+    <button part="button" class="btn" type="button" aria-label="{{label}}" aria-pressed="{{pressed}}"><slot></slot></button>
+  </template>
+</html-export>
+
+<!-- Form-associated: a real form control. It takes part in FormData, :invalid, reset and required. -->
+<html-export name="field" form-associated form-control="input" props="placeholder">
+  <style>
+    :host { display: block; }
+    label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+    input {
+      font: inherit; font-size: 0.9375rem; padding: 0.4rem 0.55rem; box-sizing: border-box; width: 100%;
+      border-radius: var(--wa-radius-sm, 4px); border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6);
+      background: var(--wa-color-surface, #fff); color: var(--wa-color-fg, #14171c);
+    }
+    input:focus-visible { outline: var(--wa-focus-ring-width, 3px) solid var(--wa-focus-ring-color, #1d4ed8); outline-offset: 1px; }
+    :host(:invalid) input { border-color: var(--wa-color-danger, #c2372c); }
+  </style>
+  <template>
+    <label><span><slot></slot></span><input autocomplete="off" placeholder="{{placeholder}}"></label>
+  </template>
+</html-export>
+
+<html-export name="area" form-associated form-control="textarea" props="placeholder">
+  <style>
+    :host { display: block; }
+    label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+    textarea {
+      font: inherit; font-size: 0.9375rem; padding: 0.4rem 0.55rem; box-sizing: border-box; width: 100%; min-height: 4.5rem; resize: vertical;
+      border-radius: var(--wa-radius-sm, 4px); border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6);
+      background: var(--wa-color-surface, #fff); color: var(--wa-color-fg, #14171c);
+    }
+    textarea:focus-visible { outline: var(--wa-focus-ring-width, 3px) solid var(--wa-focus-ring-color, #1d4ed8); outline-offset: 1px; }
+  </style>
+  <template>
+    <label><span><slot></slot></span><textarea placeholder="{{placeholder}}"></textarea></label>
+  </template>
+</html-export>
+
+<html-export name="date-field" form-associated form-control="input">
+  <style>
+    :host { display: block; }
+    label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+    input {
+      font: inherit; font-size: 0.9375rem; padding: 0.35rem 0.55rem; box-sizing: border-box; width: 100%; color-scheme: light dark;
+      border-radius: var(--wa-radius-sm, 4px); border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6);
+      background: var(--wa-color-surface, #fff); color: var(--wa-color-fg, #14171c);
+    }
+    input:focus-visible { outline: var(--wa-focus-ring-width, 3px) solid var(--wa-focus-ring-color, #1d4ed8); outline-offset: 1px; }
+  </style>
+  <template>
+    <label><span><slot></slot></span><input type="date"></label>
+  </template>
+</html-export>
+
+<html-export name="badge" props="tone">
+  <style>
+    :host { display: inline-block; }
+    span {
+      font-size: 0.75rem; font-weight: 600; padding: 0.1rem 0.5rem; border-radius: var(--wa-radius-pill, 999px);
+      background: var(--wa-color-accent-soft, rgb(29 78 216 / 0.12)); color: var(--wa-color-fg, #14171c);
+      border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6);
+    }
+    span[data-tone="danger"] { color: var(--wa-color-danger, #c2372c); border-color: currentColor; background: transparent; }
+  </style>
+  <template><span data-tone="{{tone}}"><slot></slot></span></template>
+</html-export>
+
+<html-export name="stat" props="label value:number">
+  <style>
+    :host { display: block; }
+    div { display: grid; gap: 0.1rem; padding: 0.5rem 0.75rem; border: var(--wa-border-width, 1px) solid var(--wa-color-border, #c9ced6); border-radius: var(--wa-radius-md, 8px); }
+    .value { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .label { font-size: 0.75rem; color: var(--wb-muted, #4f5865); }
+  </style>
+  <template><div><span class="value">{{value}}</span><span class="label">{{label}}</span></div></template>
+</html-export>
