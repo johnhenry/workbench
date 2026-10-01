@@ -30,6 +30,7 @@ test.describe("strict CSP with Trusted Types", () => {
     await openApp(page);
     const supported = await page.evaluate(() => typeof window.trustedTypes?.createPolicy === "function");
     testInfo.annotations.push({ type: "trusted-types", description: supported ? "supported" : "UNSUPPORTED in this engine: the CSP directives are ignored, the app still runs" });
+    console.log(`[trusted-types] ${testInfo.project.name}: ${supported ? "supported and enforced" : "unsupported (degrades gracefully)"}`);
     if (!supported) {
       // degrade gracefully: the app must work without Trusted Types
       await expect(page.locator("wm-view")).toHaveCount(4);
