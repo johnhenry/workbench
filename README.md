@@ -114,7 +114,7 @@ mport.lock.json      mport's lockfile: exact dayjs version, build and the integr
 ## Findings
 
 Every bug, gap and awkward API met while building this. **Fixed** items are in the library's `main` (the sha is the
-fix, with a regression test; `package.json` pins a commit at or after it). **Issue** items are filed.
+fix, with a regression test; `package.json` pins a commit at or after it). **Issue** items are filed. Each one has a minimal repro in [FINDINGS.md](FINDINGS.md).
 
 | | Library | Finding | Status |
 | --- | --- | --- | --- |
