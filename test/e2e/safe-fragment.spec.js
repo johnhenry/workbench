@@ -217,7 +217,7 @@ for (const engine of ENGINES) {
       expect(found.handlers).toEqual([]);
       // Firefox's native setHTML parses with the scripting flag on, so the <noscript> item may leave a bare <img src="x"> (no
       // handler; profile-conformant; safe-fragment's xss-corpus documents it). It is why that item is not in the shared payload.
-      await card.locator(".body p").dispatchEvent("click");
+      await card.locator(".body p").first().dispatchEvent("click");
       expect(await page.evaluate(() => window.__pwned)).toEqual([]);
       // Chromium reports the parse itself (style-src-attr, style-src-elem, base-uri) although nothing is applied; WebKit does not.
       // Pin the whole set: no script-src, img-src or require-trusted-types-for report may ever appear here.

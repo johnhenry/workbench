@@ -1,9 +1,15 @@
 import AxeBuilder from "@axe-core/playwright";
-import { test, expect, openApp, view } from "./fixtures.js";
+import { test, expect, openApp, settle, view } from "./fixtures.js";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"];
 
 async function scan(page) {
+  // The Data window fills after the page is "ready" (11 import-map rows now, so its body scrolls), and window-algebra's chrome marks
+  // a scrolling body focusable from a ResizeObserver callback (W9). Look only once both have happened: scanning in between is a race
+  // (WebKit on the CI runner lost it on every attempt once the import map grew).
+  await page.locator('wm-view[data-view="data"] wb--data-row[slot="imports"]').first().waitFor();
+  await settle(page);
+  await settle(page);
   const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   const blocking = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   return { blocking, all: violations };
