@@ -22,7 +22,7 @@
   "dependencies": {
     "@johnhenry/html-modules": "github:johnhenry/html-modules#953f40b4a4ac64608b01b16d07524d8aeb784d49",
     "@johnhenry/mport": "github:johnhenry/mport#e9a9c0beb7e4730a549ecc38ca3538a1facb9adc",
-    "@johnhenry/window-algebra": "github:johnhenry/window-algebra#ce49ba21fe06b891985250c149ede54f20c2c187"
+    "@johnhenry/window-algebra": "github:johnhenry/window-algebra#c8f1e3f495e2829e1e2eec81f1c7c77d53caa21d"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

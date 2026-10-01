@@ -17,7 +17,7 @@ export async function mountData(host, { wm }) {
     items: imports, tag: "wb--data-row", slot: "imports",
     apply(el, entry) {
       setAttr(el, "name", entry.id);
-      setAttr(el, "detail", entry.cdn ? new URL(entry.url).host : "local");
+      setAttr(el, "detail", entry.cdn ? new URL(entry.url).host : entry.url.split("/").slice(-2).join("/"));
       setAttr(el, "tone", entry.cdn ? (entry.hashed ? "cdn+sri" : "cdn") : "local");
     },
   });

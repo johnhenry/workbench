@@ -53,7 +53,7 @@
       background: var(--wa-color-surface, #fff); color: var(--wa-color-fg, #14171c);
     }
     input:focus-visible { outline: var(--wa-focus-ring-width, 3px) solid var(--wa-focus-ring-color, #1d4ed8); outline-offset: 1px; }
-    :host(:invalid) input { border-color: var(--wa-color-danger, #c2372c); }
+    :host(:user-invalid) input { border-color: var(--wa-color-danger, #c2372c); }
   </style>
   <template>
     <label><span><slot></slot></span><input autocomplete="off" placeholder="{{placeholder}}"></label>

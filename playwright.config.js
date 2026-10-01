@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = Number(process.env.WORKBENCH_PORT ?? 4399);
 
 export default defineConfig({
+  globalSetup: "./test/global-setup.js",
   testDir: "./test/e2e",
   testMatch: "**/*.spec.js",
   fullyParallel: true,

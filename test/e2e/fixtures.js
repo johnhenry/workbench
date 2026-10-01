@@ -11,6 +11,8 @@ const index = JSON.parse(await readFile(new URL("index.json", FIXTURES), "utf8")
  * or a Trusted Types violation.
  */
 export const test = base.extend({
+  // Set `test.use({ allowErrors: true })` in a spec that provokes errors on purpose.
+  allowErrors: [false, { option: true }],
   context: async ({ context, baseURL }, use) => {
     const origin = new URL(baseURL).origin;
     context.external = [];
@@ -27,7 +29,7 @@ export const test = base.extend({
     });
     await use(context);
   },
-  problems: async ({ context }, use) => {
+  problems: async ({ context, allowErrors }, use) => {
     const problems = [];
     const watch = (page) => {
       page.on("pageerror", (error) => { if (!/ResizeObserver loop/.test(error.message)) problems.push(`pageerror: ${error.message}`); });
@@ -36,7 +38,7 @@ export const test = base.extend({
     context.on("page", watch);
     for (const page of context.pages()) watch(page);
     await use(problems);
-    expect(problems, "errors on the page").toEqual([]);
+    if (!allowErrors) expect(problems, "errors on the page").toEqual([]);
   },
   page: async ({ page, problems }, use) => {
     void problems;
@@ -59,3 +61,6 @@ export async function openApp(page, path = "/") {
 
 export const settle = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 export const wmState = (page) => page.evaluate(() => window.workbench.wm.getState());
+
+export const view = (page, id) => page.locator(`wm-view[data-view="${id}"]`);
+export const toolbar = (page) => page.locator("nav.actions");

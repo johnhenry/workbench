@@ -49,7 +49,9 @@ const stage = $("#stage");
 stage.configure({
   wm,
   surfaceFor,
-  input: { keyboard: true, touch: true, announce: true },
+  // keyboard: Alt+Shift+Arrows move/resize a floating window, F6 cycles windows. touch: pinch resizes a
+  // floating window, and a long press on any window floats or docks it. announce: aria-live narration.
+  input: { keyboard: true, touch: { pinch: true, swipe: { tabs: true }, contextMenu: "window/toggle-floating" }, announce: true },
 });
 syncChrome(wm, stage);
 

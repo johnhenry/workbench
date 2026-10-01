@@ -1,7 +1,7 @@
 <!-- Settings: choice groups built from kit buttons, and a form with a form-associated field. -->
 <html-import src="@workbench/ui/kit.html" as="kit"></html-import>
 
-<html-export name="settings-tool" props="owner">
+<html-export name="settings-tool">
   <style>
     :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
     fieldset { border: var(--wa-border-width, 1px) solid var(--wa-color-border); border-radius: var(--wa-radius-md, 8px); margin: 0 0 0.75rem; padding: 0.5rem 0.75rem 0.75rem; }
@@ -27,7 +27,7 @@
       </div>
     </fieldset>
     <form part="form" aria-label="Profile">
-      <kit--field name="owner" required placeholder="Ada" value="{{owner}}">Your name</kit--field>
+      <kit--field name="owner" required placeholder="Ada">Your name</kit--field>
       <div><kit--button variant="primary" data-action="submit">Save</kit--button></div>
       <p class="hint" role="status"></p>
     </form>

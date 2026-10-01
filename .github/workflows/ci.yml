@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  e2e:
+    name: e2e (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      # package-lock.json records the three libraries as git+ssh://git@github.com/...; the runner has no ssh key.
+      - name: Fetch git dependencies over https
+        run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+      - run: npm ci
+      # Hermetic build: mport resolves from mport.lock.json, CDN bytes come from test/fixtures/cdn.
+      - run: npm run build:offline
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npx playwright test --project=${{ matrix.browser }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  smoke:
+    name: smoke (real CDN, non-gating)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+      - run: npm ci
+      # Not offline: mport reads the lockfile and re-hashes every esm.sh file; a changed file fails the build.
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx playwright test --config playwright.smoke.config.js
