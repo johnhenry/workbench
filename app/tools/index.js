@@ -3,12 +3,14 @@ import { mountNotes } from "./notes.js";
 import { mountTasks } from "./tasks.js";
 import { mountData } from "./data.js";
 import { mountSettings } from "./settings.js";
+import { mountClips } from "./clips.js";
 
 // id -> { title, tag, mount }. A tool is an html-modules component (tag) plus the glue that feeds it data.
 export const TOOLS = {
   notes: { title: "Notes", tag: "wb--notes-tool", mount: mountNotes },
   tasks: { title: "Tasks", tag: "wb--tasks-tool", mount: mountTasks },
   data: { title: "Data", tag: "wb--data-tool", mount: mountData },
+  clips: { title: "Clips", tag: "wb--clips-tool", mount: mountClips },
   settings: { title: "Settings", tag: "wb--settings-tool", mount: mountSettings, floating: { x: 70, y: 70, width: 380, height: 420 } },
 };
 

@@ -6,9 +6,20 @@ import "@johnhenry/html-modules/browser";
 import { createState, createWindowManager } from "@johnhenry/window-algebra";
 import { lazySurface } from "@johnhenry/window-algebra/browser";
 import { defineWindowAlgebraElement } from "@johnhenry/window-algebra/element";
+import { preloadSanitizer, registerSafeFragment } from "@johnhenry/safe-fragment";
 import { createStore, read, WM_KEY, write } from "./store.js";
 import { TOOLS, mountTool } from "./tools/index.js";
 import { applyTheme } from "./tools/settings.js";
+
+// safe-fragment: defines <safe-fragment> (used inside the note cards). Where there is no native Sanitizer API (Safari) it
+// falls back to DOMPurify, which it import()s by bare name: the import map mport built maps "dompurify" (added by
+// build({ dependencies: true })), and the CSP's trusted-types lists the policy it creates.
+registerSafeFragment();
+const sanitizerStatus = document.querySelector("#sanitizer");
+preloadSanitizer().then(
+  (engine) => { sanitizerStatus.dataset.engine = engine; sanitizerStatus.textContent = `Sanitizer: ${engine}`; },
+  (error) => { sanitizerStatus.dataset.engine = "unavailable"; sanitizerStatus.textContent = "Sanitizer: unavailable"; reportError(error); },
+);
 
 const $ = (selector) => document.querySelector(selector);
 const store = createStore();

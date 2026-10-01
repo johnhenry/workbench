@@ -16,11 +16,13 @@ test.describe("the import map mport generated", () => {
     await openApp(page);
     const map = await page.evaluate(() => JSON.parse(document.querySelector('script[type="importmap"]').textContent));
     expect(Object.keys(map.imports).sort()).toEqual([
-      "@johnhenry/html-modules/browser", "@johnhenry/html-modules/runtime",
+      "@johnhenry/html-modules/browser", "@johnhenry/html-modules/runtime", "@johnhenry/html-modules/safe-fragment",
+      "@johnhenry/safe-fragment",
       "@johnhenry/window-algebra", "@johnhenry/window-algebra/browser", "@johnhenry/window-algebra/element",
       "@workbench/ui/", "dayjs", "dayjs/plugin/relativeTime",
+      "dompurify", // not listed in scripts/build.mjs: added by build({ dependencies: true }) from safe-fragment's manifest
     ]);
-    // the three libraries are local (node_modules), the app's components are a prefix, dayjs is on the CDN
+    // the libraries are local (node_modules), the app's components are a prefix, dayjs is on the CDN
     expect(map.imports["@johnhenry/window-algebra"]).toBe("/node_modules/@johnhenry/window-algebra/src/index.mjs");
     expect(map.imports["@workbench/ui/"]).toBe("/components/");
     expect(map.imports.dayjs).toMatch(/^https:\/\/esm\.sh\/dayjs@\d+\.\d+\.\d+\?target=es2022$/);
@@ -44,7 +46,7 @@ test.describe("the import map mport generated", () => {
   test("an HTML module is loaded through a bare specifier that the import map resolves", async ({ page }) => {
     await openApp(page);
     const states = await page.evaluate(() => [...document.querySelectorAll("html-import")].map((el) => el.state));
-    expect(states).toEqual(Array(6).fill("loaded"));
+    expect(states).toEqual(Array(7).fill("loaded"));
     const sources = await page.evaluate(() => [...document.querySelectorAll("html-import")].map((el) => el.getAttribute("src")));
     expect(sources.every((s) => s.startsWith("@workbench/ui/"))).toBe(true);
   });

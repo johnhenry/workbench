@@ -5,6 +5,7 @@ import { test, expect } from "@playwright/test";
 
 // The build's mport features, checked against what it wrote. No browser involved.
 const root = new URL("../../", import.meta.url);
+const lockPackages = Object.keys(JSON.parse(await readFile(new URL("mport.lock.json", root), "utf8")).packages);
 const html = await readFile(new URL("index.html", root), "utf8");
 const map = JSON.parse(await readFile(new URL("importmap.json", root), "utf8"));
 
@@ -35,6 +36,27 @@ test.describe("build: mport features", () => {
     const { importMap } = await router.build(["@workbench/ui/"]);
     expect(importMap.imports).toEqual({ "@workbench/ui/": "/components/" });
     expect(map.imports["@workbench/ui/"]).toBe("/components/");
+  });
+
+  test("build({ dependencies: true }) adds safe-fragment's dompurify to the map; the route for it is ours (mport#dependencies)", async () => {
+    const registry = installedRegistry({ root: new URL("node_modules/", root) });
+    const routes = { "@johnhenry/*": local({ base: "/node_modules/" }), dompurify: local({ base: "/node_modules/" }) };
+    // only safe-fragment is listed ...
+    const { importMap, dependencies } = await createRouter(routes, { registry, probe: "none" }).build(["@johnhenry/safe-fragment"], { dependencies: true });
+    // ... and dompurify, at the exact version safe-fragment pins, is in the map because its manifest says so
+    const pinned = JSON.parse(await readFile(new URL("node_modules/@johnhenry/safe-fragment/package.json", root), "utf8")).dependencies.dompurify;
+    expect(importMap.imports).toEqual({
+      "@johnhenry/safe-fragment": "/node_modules/@johnhenry/safe-fragment/dist/index.js",
+      dompurify: "/node_modules/dompurify/dist/purify.es.mjs",
+    });
+    expect(dependencies.added).toMatchObject([{ specifier: `dompurify@${pinned}`, from: expect.stringMatching(/^@johnhenry\/safe-fragment@/), depth: 1, provider: "local" }]);
+    // without the explicit route nothing claims it (a dependency is routed like any specifier, not by its dependent's provider)
+    const bare = await createRouter({ "@johnhenry/*": local({ base: "/node_modules/" }) }, { registry, probe: "none" }).build(["@johnhenry/safe-fragment"], { dependencies: true });
+    expect(Object.keys(bare.importMap.imports)).toEqual(["@johnhenry/safe-fragment"]);
+    expect(bare.dependencies.skipped.length + bare.dependencies.added.length).toBeGreaterThan(0);
+    // and what the build wrote is the first case
+    expect(map.imports.dompurify).toBe("/node_modules/dompurify/dist/purify.es.mjs");
+    expect(lockPackages).toContain(`dompurify@${pinned}`);
   });
 
   test("the build no longer carries the workarounds it replaced", async () => {

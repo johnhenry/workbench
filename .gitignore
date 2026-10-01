@@ -5,3 +5,4 @@ playwright-report/
 /importmap.json
 .scratch/
 /styles/generated/
+/dist/

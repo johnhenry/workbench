@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/johnhenry/workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/johnhenry/workbench/actions/workflows/ci.yml)
 
-A small, real app that exists to test one claim: that three sibling libraries, which depend on nothing
+**Live: <https://johnhenry.github.io/workbench/>** (GitHub Pages, deployed from CI; see [Deploy](#deploy)).
+
+A small, real app that exists to test one claim: that four sibling libraries, which depend on nothing
 from each other, **meet at the import map**.
 
 | Library | Does | Docs |
@@ -10,14 +12,15 @@ from each other, **meet at the import map**.
 | [`@johnhenry/mport`](https://github.com/johnhenry/mport) | routes imports across CDNs and compiles them to an import map and a lockfile | [opensource.johnhenry.me/mport](https://opensource.johnhenry.me/mport/) |
 | [`@johnhenry/html-modules`](https://github.com/johnhenry/html-modules) | declarative Web Components in ordinary `.html` files | [opensource.johnhenry.me/html-modules](https://opensource.johnhenry.me/html-modules/) |
 | [`@johnhenry/window-algebra`](https://github.com/johnhenry/window-algebra) | a functional window manager: layouts, drag and dock, palette, sync | [opensource.johnhenry.me/window-algebra](https://opensource.johnhenry.me/window-algebra/) |
+| [`@johnhenry/safe-fragment`](https://github.com/johnhenry/safe-fragment) | renders untrusted HTML into live DOM only through a versioned allowlist profile (native Sanitizer API, or DOMPurify) | [opensource.johnhenry.me/safe-fragment](https://opensource.johnhenry.me/safe-fragment/) |
 
 The claim holds: the import map is a real seam, and the page needs no bundler. The friction was in the details;
-[what was found](#findings) is listed below, and every gap it found has since been fixed in the libraries and the
-workarounds removed.
+[what was found](#findings) is listed below. Every gap the first three libraries showed has been fixed and the
+workarounds removed; safe-fragment, added since, has one open issue (S1).
 
 ## What it is
 
-A workbench with four tool windows (notes, tasks, a data view, settings) in a tiling window manager.
+A workbench with five tool windows (notes, tasks, a data view, clips, settings) in a tiling window manager.
 
 - **Shell** (window-algebra): `<wa-stage>` with two layouts (master-stack and grid) plus floating windows, the
   built-in window chrome (`chrome: true`: title bar, buttons, resize grips), drag to move, dock and reorder, the
@@ -32,7 +35,10 @@ A workbench with four tool windows (notes, tasks, a data view, settings) in a ti
   with `renderImportMapCsp()` (the tag and its CSP hash) and `renderModulePreload()`.
 - **A real third-party package**: `dayjs` (and its `relativeTime` plugin) from esm.sh, formatting due dates and
   "updated" times, pinned by `mport.lock.json` with `graph` integrity.
-- **Strict CSP**: a meta CSP with `require-trusted-types-for 'script'`, `trusted-types html-modules`,
+- **Untrusted rich text** (safe-fragment): a note's body is pasted HTML. It is rendered by `<safe-fragment profile="article-v1">`
+  inside each note card, and the "Clips" tool loads a module from a less-trusted origin through html-modules' `sanitize`
+  hook. See [Untrusted rich text](#untrusted-rich-text-safe-fragment).
+- **Strict CSP**: a meta CSP with `require-trusted-types-for 'script'`, `trusted-types html-modules dompurify`,
   `style-src 'self'` (no hashes), no `'unsafe-inline'` and no `'unsafe-eval'`.
 
 ## How the three fit together
@@ -73,8 +79,51 @@ A workbench with four tool windows (notes, tasks, a data view, settings) in a ti
   cross-tab sync, so the app reads `stage.palette` and `stage.sync` instead of wiring a `<wa-palette>` and
   `attachSync` itself. It writes no `<style>`: its CSS (`CHROME_CSS` included) is written to
   `styles/generated/wa.css` by the build.
+- **mport → safe-fragment (and its dependency).** safe-fragment's DOMPurify fallback is a dynamic `import("dompurify")`: a bare
+  specifier the page's map must cover. The build lists only `@johnhenry/safe-fragment`; `build({ dependencies: true })` reads its
+  manifest and adds `dompurify` at the exact version it pins (the router needs a `dompurify` route of its own, see S3).
+- **html-modules ↔ safe-fragment.** Neither depends on the other. The page passes safe-fragment to html-modules' adapter
+  (`safeFragmentSanitizer`), and uses `<safe-fragment>` as an ordinary custom element inside a component template.
 - **mport → the page.** dayjs is not installed. The map points it at esm.sh, with an `integrity` hash for every
   file of its import graph, so a changed CDN file is refused by the engine.
+
+## Untrusted rich text (safe-fragment)
+
+Both halves of the integration run on the engine the browser has: the **native HTML Sanitizer API** (`setHTML`, Chromium and Firefox)
+or **DOMPurify** (WebKit has no `setHTML`; safe-fragment loads it on demand through the import map). The page's CSP allows only
+the Trusted Types policies `html-modules` and `dompurify`, and no string ever reaches an HTML sink of ours.
+
+1. **`<safe-fragment>` in the note view.** A note's body is untrusted rich text (pasted HTML). `components/notes.html`'s `note-card`
+   holds `<safe-fragment profile="article-v1">`; `app/tools/notes.js` hands it the string as the `.html` property
+   (markup goes through `article-v1`; text with no markup in it through `plain-text-v1`, which keeps its line breaks). The
+   `safe-fragment:render` event's `SanitizationReport` comes back as a line in the card ("Sanitized (article-v1, dompurify): removed
+   5: <script>, ...").
+2. **html-modules' `sanitize` hook.** `components/untrusted/clip.html` stands for a module somebody else wrote: its template carries
+   `<script>`, `<iframe srcdoc>`, `<svg onload>`, `javascript:` links, `onerror` and `onclick` handlers, a form. `app/tools/clips.js`
+   imports it with `el.sanitize = safeFragmentSanitizer({ safeFragment, profile: { base: "article-v1", namespaces: ["clip"] } })`
+   (`@johnhenry/html-modules/safe-fragment`). Every template is sanitized before the component is defined; the `{{heading}}`
+   binding and the https link survive; what was removed arrives as `html-modules:sanitize` events and is listed in the Clips window.
+3. **Through mport.** `@johnhenry/safe-fragment` and `@johnhenry/html-modules/safe-fragment` are in `SPECIFIERS`; `dompurify` is not:
+   `router.build(SPECIFIERS, { graph: true, dependencies: true })` adds it. The status bar names the engine in use.
+
+The tests (`test/e2e/safe-fragment.spec.js`, three engines) paste XSS payloads (img `onerror`, `javascript:` links, obfuscated
+schemes, svg, `srcset` tricks, `<iframe srcdoc>`, a form with `formaction`, mXSS) into notes, once on the browser's own engine and once with
+`Element.prototype.setHTML` removed (the DOMPurify path on every engine), and assert: nothing executes, benign formatting survives, the
+report surfaces in the UI, the less-trusted module's template is sanitized, **zero CSP/Trusted Types violation events**, and axe stays
+clean. One test removes the page's CSP altogether: the sanitizer alone still holds. Known gap: see S1 (parse-time CSP reports).
+
+## Deploy
+
+**<https://johnhenry.github.io/workbench/>**, from `.github/workflows/pages.yml` (Pages source: "GitHub Actions"):
+
+1. `npm run build:pages` runs the same mport build with `--base /workbench/ --out dist`: the import map, the CSP and the
+   `@workbench/ui/` prefix carry the base, and the libraries are **copied into `dist/vendor/`** (a static host serves no
+   `node_modules`): `"@johnhenry/safe-fragment": "/workbench/vendor/@johnhenry/safe-fragment/dist/index.js"`. The page's own links are
+   relative. `mport.lock.json` is read, not rewritten; dayjs still comes from esm.sh with its integrity hashes.
+2. `actions/upload-pages-artifact` uploads `dist/`, `actions/deploy-pages` deploys it.
+3. A Playwright job (`playwright.pages.config.js`, `test/pages/`) runs against the deployed URL on three engines (non-gating, so a CDN
+   hiccup does not mark the deploy red). Locally: `npm run build:pages && npm run test:pages` serves `dist/` under `/workbench/` the way
+   Pages does.
 
 ## Run it
 
@@ -93,6 +142,8 @@ npm start
 | --- | --- |
 | `npm run build` | resolve through `mport.lock.json`; downloads and re-hashes the esm.sh files (a changed file fails the build) |
 | `npm run build:offline` | the same, but CDN bytes come from `test/fixtures/cdn` (what CI and the tests use) |
+| `npm run build:pages` | the deployable site in `dist/` for the `/workbench/` subpath (libraries copied to `dist/vendor/`) |
+| `npm run test:pages` | Playwright against `dist/` served under `/workbench/` (or `WORKBENCH_URL=<url>` against a deployed site) |
 | `node scripts/build.mjs --relock` | ignore the lockfile and resolve again (to update dayjs) |
 | `npm run record:cdn` | refresh `test/fixtures/cdn` from the lockfile's hashes |
 | `npm test` | Playwright on Chromium, Firefox and WebKit, hermetic (rebuilds offline first) |
@@ -101,7 +152,7 @@ npm start
 
 ## Tests
 
-`test/e2e` (Playwright, three engines): boot with no console errors and no CSP or Trusted Types violations; windows
+`test/e2e` (Playwright, three engines; `safe-fragment.spec.js` is described above): boot with no console errors and no CSP or Trusted Types violations; windows
 open, move (mouse, keyboard, touch) and dock; two layouts; the built-in chrome; the palette (shortcut, and the button
 through `stage.palette`); forms submitted through the form-associated components, with Enter and the real submit-button
 component; data binding; state surviving a reload; two tabs in sync; dark mode; RTL; an axe scan with no serious or
@@ -114,10 +165,11 @@ separate, non-gating CI job runs the same page against the real CDN.
 
 ```
 app/                 the shell: main.js, tool glue (JS feeds data to components), index.template.html
-components/          html-modules: kit.html (shared), notes.html, tasks.html, data.html, settings.html
-scripts/             build.mjs (mport), serve.mjs, record-cdn.mjs, offline-fetch.mjs
+components/          html-modules: kit.html (shared), notes.html, tasks.html, data.html, clips.html, settings.html
+components/untrusted/  a module loaded through the sanitize hook (safe-fragment)
+scripts/             build.mjs (mport; --base/--out for the deployable site), serve.mjs, record-cdn.mjs, offline-fetch.mjs
 styles/app.css       the app's own CSS (generated/wa.css is window-algebra's, written by the build)
-test/e2e/            Playwright specs;  test/fixtures/cdn/ recorded CDN bytes;  test/smoke/ real-CDN smoke
+test/e2e/            Playwright specs;  test/fixtures/cdn/ recorded CDN bytes;  test/smoke/ real-CDN smoke;  test/pages/ the deployed site
 mport.lock.json      mport's lockfile: exact dayjs version, build and the integrity of every CDN file
 ```
 
@@ -146,6 +198,9 @@ fix, with a regression test; `package.json` pins a commit at or after it) and th
 | W5 | window-algebra | no built-in window chrome (title bar, buttons, grips): every app rewrites it | fixed `c6fd6e7`; `app/chrome.js` removed in `ec3cc82` |
 | W6 | window-algebra | `<wa-stage>` hides the `sync` and `palette` handles it creates | fixed `c4731e2`; `<wa-palette>` and `attachSync` removed in `ec3cc82` |
 | W7 | window-algebra | `config.direction` is deliberately not synced between tabs | wontfix (documented design) |
+| S1 | safe-fragment | parsing input with `style=`, `<style>` or `<base>` reports CSP violations on Chromium (`style-src-attr`, `style-src-elem`, `base-uri`) although the output is clean | [issue #13](https://github.com/johnhenry/safe-fragment/issues/13) |
+| S2 | safe-fragment | the native engine's report cannot list its own removals (script, frames, `on*`, `javascript:`), so "removed 1" can mean five | documented limit (ADR 0007); the UI says so |
+| S3 | mport | a dependency found by `dependencies: true` is routed like any specifier: with `"*": esmSh()` dompurify went to esm.sh, not next to its dependent | documented; needs its own route (`dompurify: local()`) |
 | W8 | window-algebra | Chromium: a mouse click on Maximize of a tiled window left the Restore button hidden (attributes written before `moveBefore()`) | fixed `3fe88ea` |
 | W9 | window-algebra | the chrome's scrolling body was not focusable when its content rendered after mount (axe) | fixed `3fe88ea` |
 

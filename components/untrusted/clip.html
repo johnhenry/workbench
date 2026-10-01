@@ -1,0 +1,28 @@
+<!-- A module from a less-trusted origin: a clip card that somebody else wrote. The workbench loads it through
+     html-modules' `sanitize` hook (safeFragmentSanitizer), so the template below is cleaned before the component is
+     defined. The hostile bits are the point: every one of them must be gone from the rendered card, and the
+     good parts (the heading binding, the https link, the formatting) must stay. -->
+<html-export name="card" props="heading">
+  <!-- Stylesheets are NOT sanitized (safe-fragment cannot carry <style>): this one is the workbench's own. -->
+  <style>
+    :host { display: block; }
+    article { padding: 0.6rem 0.75rem; border: var(--wa-border-width, 1px) dashed var(--wa-color-border); border-radius: var(--wa-radius-md, 8px); }
+    h3 { margin: 0 0 0.35rem; font-size: 1rem; border-bottom: 1px dashed currentColor; }
+    p { margin: 0.35rem 0 0; font-size: 0.9375rem; }
+    img { max-width: 2rem; height: auto; }
+  </style>
+  <template>
+    <article>
+      <h3>{{heading}}</h3>
+      <p>Hello from a module you do not fully trust. It has <strong>bold</strong>, <em>italic</em> and
+         <a href="https://example.com/clip" target="_blank">a link</a>.</p>
+      <p><img src="favicon.svg" alt="the workbench icon" onerror="window.__pwnedModule = (window.__pwnedModule || []).concat('img onerror')">
+         <a id="trap" href="javascript:window.__pwnedModule = (window.__pwnedModule || []).concat('javascript: href')">a javascript: link</a></p>
+      <script>window.__pwnedModule = (window.__pwnedModule || []).concat('script')</script>
+      <iframe srcdoc="<script>parent.__pwnedModule = (parent.__pwnedModule || []).concat('iframe srcdoc')</script>"></iframe>
+      <svg onload="window.__pwnedModule = (window.__pwnedModule || []).concat('svg onload')" width="10" height="10"><circle r="4"/></svg>
+      <form action="javascript:window.__pwnedModule = 1"><input name="x" onfocus="window.__pwnedModule = 2" autofocus></form>
+      <p onclick="window.__pwnedModule = (window.__pwnedModule || []).concat('onclick')">Clickable text.</p>
+    </article>
+  </template>
+</html-export>

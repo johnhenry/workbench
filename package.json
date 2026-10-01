@@ -10,6 +10,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:offline": "node scripts/build.mjs --offline",
+    "build:pages": "node scripts/build.mjs --base /workbench/ --out dist",
+    "serve:pages": "node scripts/serve.mjs 4410 --dir dist --prefix /workbench/",
     "record:cdn": "node scripts/record-cdn.mjs",
     "serve": "node scripts/serve.mjs",
     "start": "npm run build && npm run serve",
@@ -17,11 +19,13 @@
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
     "test:webkit": "playwright test --project=webkit",
-    "test:smoke": "playwright test --config playwright.smoke.config.js"
+    "test:smoke": "playwright test --config playwright.smoke.config.js",
+    "test:pages": "playwright test --config playwright.pages.config.js"
   },
   "dependencies": {
     "@johnhenry/html-modules": "github:johnhenry/html-modules#2dd5a5f98c58f043b2c743eb48be08a28870539b",
     "@johnhenry/mport": "github:johnhenry/mport#928dd6b0819043a9c011971b8daec349fc399daa",
+    "@johnhenry/safe-fragment": "github:johnhenry/safe-fragment#5717e5200535429fed3adc60fb7cd181dd68d6e8",
     "@johnhenry/window-algebra": "github:johnhenry/window-algebra#6b17bfc98bea50b66e9d90ca990947a52a8fd4eb"
   },
   "devDependencies": {

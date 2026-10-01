@@ -1,5 +1,30 @@
 import { actionOf, idOf, reconcile, setAttr, shadowOf } from "../dom.js";
 import { ago } from "../format.js";
+import { removalsOf, summarize } from "../sanitize-report.js";
+
+// A note's body is untrusted rich text: pasted HTML. Markup goes through safe-fragment's article-v1 profile; text with
+// no markup in it goes through plain-text-v1 (textContent, no parser), which keeps its line breaks.
+const looksLikeMarkup = (text) => /<[a-z!/]/i.test(text);
+
+// Hand a note's body to the <safe-fragment> inside its card, once per change, and put the report in the card.
+async function renderBody(card, note) {
+  const root = await shadowOf(card);
+  const fragment = root.querySelector("safe-fragment");
+  const profile = looksLikeMarkup(note.body) ? "article-v1" : "plain-text-v1";
+  if (!card.__listening) {
+    card.__listening = true;
+    fragment.addEventListener("safe-fragment:render", (event) => {
+      const { report } = event.detail;
+      const removed = removalsOf(report);
+      setAttr(card, "report", removed.length ? summarize(removed, { profile: report.profile, engine: report.engine }) : "");
+    });
+    fragment.addEventListener("safe-fragment:reject", (event) => setAttr(card, "report", `Not rendered: ${event.detail.code}`));
+  }
+  if (card.__body === note.body) return;
+  card.__body = note.body;
+  if (fragment.profile !== profile) fragment.profile = profile;
+  fragment.html = note.body; // a property: the string never passes through an attribute or an HTML sink of ours
+}
 
 export async function mountNotes(host, { store }) {
   const root = await shadowOf(host);
@@ -23,7 +48,7 @@ export async function mountNotes(host, { store }) {
       items: notes, tag: "wb--note-card", slot: "items",
       apply(el, note) {
         setAttr(el, "heading", note.title);
-        setAttr(el, "body", note.body);
+        renderBody(el, note).catch((error) => reportError(error));
         setAttr(el, "updated", `Updated ${ago(note.updated)}`);
       },
     });

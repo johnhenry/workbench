@@ -23,13 +23,21 @@
   </template>
 </html-export>
 
-<html-export name="note-card" props="heading body updated">
+<html-export name="note-card" props="heading body updated report">
   <style>
     :host { display: block; }
     article { padding: 0.6rem 0.75rem; border: var(--wa-border-width, 1px) solid var(--wa-color-border); border-radius: var(--wa-radius-md, 8px); background: var(--wa-color-surface-raised); }
     header { display: flex; align-items: start; justify-content: space-between; gap: 0.5rem; }
     h3 { margin: 0; font-size: 1rem; overflow-wrap: anywhere; }
-    .body { margin: 0.35rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9375rem; }
+    .body { margin: 0.35rem 0 0; overflow-wrap: anywhere; font-size: 0.9375rem; }
+    .body safe-fragment { display: block; }
+    .body safe-fragment[profile="plain-text-v1"] { white-space: pre-wrap; }
+    .body :is(p, ul, ol, blockquote, h1, h2, h3, h4, pre, table) { margin: 0.35rem 0 0; }
+    .body :is(h1, h2, h3, h4) { font-size: 1rem; }
+    .body img { max-width: 100%; height: auto; }
+    .body a { color: var(--wa-color-accent, #1d4ed8); }
+    .report:empty { display: none; }
+    .report { margin: 0.35rem 0 0; font-size: 0.75rem; color: var(--wb-muted, #4f5865); overflow-wrap: anywhere; }
     .meta { margin: 0.35rem 0 0; font-size: 0.75rem; color: var(--wb-muted, #4f5865); }
   </style>
   <template>
@@ -38,7 +46,11 @@
         <h3>{{heading}}</h3>
         <kit--button variant="icon" data-action="delete" label="Delete note {{heading}}">Delete</kit--button>
       </header>
-      <p class="body">{{body}}</p>
+      <!-- The note's body is untrusted rich text (pasted HTML). It is never written into this template: the tool's glue
+           hands the string to <safe-fragment>, which renders it through the profile, and the report comes back as the
+           `report` attribute. -->
+      <div class="body"><safe-fragment profile="article-v1" render-mode="replace"></safe-fragment></div>
+      <p class="report" data-report>{{report}}</p>
       <p class="meta">{{updated}}</p>
     </article>
   </template>

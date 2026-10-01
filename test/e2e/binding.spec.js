@@ -73,7 +73,7 @@ test.describe("data binding ({{attr}} and props) updates the DOM", () => {
 
   test("the data window lists the import map the page runs on, with each entry's origin", async ({ page }) => {
     const rows = view(page, "data").locator('wb--data-row[slot="imports"]');
-    await expect(rows).toHaveCount(8);
+    await expect(rows).toHaveCount(11);
     await expect(rows.filter({ hasText: "dayjs/plugin/relativeTime" })).toContainText("cdn+sri");
     await expect(rows.filter({ hasText: "@johnhenry/window-algebra/browser" })).toContainText("local");
   });

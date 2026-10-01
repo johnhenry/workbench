@@ -1,6 +1,6 @@
 # Findings
 
-The question: do @johnhenry/mport, @johnhenry/html-modules and @johnhenry/window-algebra, which share no dependency, really "meet at the import map"?
+The question: do @johnhenry/mport, @johnhenry/html-modules, @johnhenry/window-algebra and @johnhenry/safe-fragment, which share no dependency, really "meet at the import map"?
 
 **Verdict: yes.**
 
@@ -9,8 +9,9 @@ The question: do @johnhenry/mport, @johnhenry/html-modules and @johnhenry/window
 - **Modules resolve through the same map.** `<html-import src="@workbench/ui/notes.html">` resolves through it (`"@workbench/ui/": "/components/"`), and so do the modules those modules import.
 - **CDN integrity is enforced.** dayjs is mapped to esm.sh with an integrity entry for every file in its graph, and all three engines refuse a changed file.
 - **The shell knows nothing about the components.** A window body is a plain custom element, so window-algebra needs no knowledge of html-modules.
+- **The fourth library joins the same way.** safe-fragment and its dompurify dependency are import-map entries (the second one added by mport's `dependencies: true`); html-modules' `sanitize` hook takes safe-fragment as an argument, and `<safe-fragment>` is just another custom element in a template. Neither imports the other. Under the strict CSP with Trusted Types (`trusted-types html-modules dompurify`) the DOMPurify path (WebKit's only one) works, and the whole app deploys unchanged to a subpath.
 
-Status keys: **fixed** (library sha, and the workbench commit that removed the workaround), **issue** (link), **wontfix** (why). The workbench now pins mport `928dd6b`, html-modules `2dd5a5f` and window-algebra `6b17bfc`.
+Status keys: **fixed** (library sha, and the workbench commit that removed the workaround), **issue** (link), **wontfix** (why). The workbench now pins mport `928dd6b`, html-modules `2dd5a5f`, window-algebra `6b17bfc` and safe-fragment `5717e52`.
 
 ## mport
 
@@ -120,6 +121,34 @@ Status keys: **fixed** (library sha, and the workbench commit that removed the w
   - `config.direction` is deliberately not synced between tabs (wontfix, documented). It is persisted.
   - Playwright's WebKit does not fire `pagehide` on `page.close()`, so the sync test navigates away instead.
 
+## safe-fragment
+
+Added as the fourth library: note bodies are untrusted rich text, rendered with `<safe-fragment profile="article-v1">`, and the Clips tool loads `components/untrusted/clip.html` through html-modules' `sanitize` hook (`safeFragmentSanitizer`). Everything below was measured with the dist built by safe-fragment's own `prepare` script from the pinned git sha (`5717e52`; the empty-package problem of safe-fragment#10 is fixed, `npm ci` gets a working `dist/`).
+
+- **S1: parsing hostile input reports CSP violations on Chromium, though the output is clean.** **Issue**: [safe-fragment#13](https://github.com/johnhenry/safe-fragment/issues/13).
+
+  ```js
+  // page CSP: style-src 'self'; base-uri 'none'
+  await sanitizeToFragment('<p style="color:red">x</p>', { profile: "article-v1" });   // native: 2x style-src-attr
+  await sanitizeToFragment("<style>p{color:red}</style><p>x</p>", { profile: "article-v1" }); // dompurify: 2x style-src-elem
+  await sanitizeToFragment('<p>x</p><base href="https://example.com/">', { profile: "article-v1" }); // dompurify: 4x base-uri
+  ```
+
+  Each is a `securitypolicyviolation` event and a console error (Chromium; WebKit reports nothing). The sanitized output is right and nothing runs, but an app with `report-to` gets a report per pasted paragraph that has a `style` attribute. The workbench's "zero CSP violations" assertions therefore use payloads without those three constructs, and one dedicated test (`input with style=, <style> or <base>`) pins that **only** `style-src-attr`, `style-src-elem` and `base-uri` reports may appear for them (no `script-src`, `img-src` or Trusted Types report), so a regression elsewhere is still caught. Remove that test's allowance when #13 is fixed.
+
+- **S2: the native engine's report lists only part of what it removed.** Documented (safe-fragment ADR 0007, `AGENTS.md`), not an issue. For `<p>hi <img onerror=…></p><script>…</script><a href="javascript:…">j</a><svg onload=…></svg><iframe srcdoc=…>` the report says `removed 1: <svg>` on Chromium's native engine and `removed 5: <script>, <svg>, <iframe>, img[onerror], a[href]` on DOMPurify; the rendered DOM is identical. The workbench's report line therefore says "(the native engine's own removals are not listed)" instead of presenting a count as complete, and the tests assert only what both engines share (`<svg>`) plus the full list under DOMPurify.
+- **S3: a dependency found by `dependencies: true` is routed like any specifier.** mport behaves as documented ("a dependency can land on a different provider than its dependent"), and it is easy to trip over: with the routes `{ "@johnhenry/*": local(), "*": esmSh() }`, `build(["@johnhenry/safe-fragment"], { dependencies: true })` added `dompurify` from **esm.sh** (the offline build then failed to hash `https://esm.sh/dompurify@3.4.16`). Without a `*` route it is reported under `dependencies.skipped`, not thrown. The fix is one route, `dompurify: local({ base })`, after which the map has `"dompurify": "/node_modules/dompurify/dist/purify.es.mjs"` at the version safe-fragment pins (3.4.16) and `mport.lock.json` records `dompurify@3.4.16`. `test/e2e/build.spec.js` pins this; the build prints what `dependencies` added and any non-trivial skip.
+- **S4: `article-v1` has no sectioning elements.** `<article>`, `<section>`, `<header>`, `<footer>`, `<nav>`, `<main>` are unwrapped (their content stays), so a pasted web page loses its structure and a module template that uses `<article>` loses the element, and the styling hook with it (the Clips card's CSS targets `h3`, not `article`). A profile derived with `registerTemplateProfile({ base: "article-v1" })` has the same list. It is a profile decision rather than a bug; derive a profile to add them.
+- **S5: what works, measured.** The DOMPurify path under `require-trusted-types-for 'script'` works with exactly `trusted-types html-modules dompurify` (no `'allow-duplicates'`): in WebKit natively, and in Chromium and Firefox with `Element.prototype.setHTML` removed (every safe-fragment test runs both ways). `registerSafeFragment()` once at startup, `await preloadSanitizer()` to surface a missing `dompurify` map entry early (its result names the engine, shown in the status bar), and `.html` set as a property on a `<safe-fragment>` that lives in a component's shadow root all behave as documented. The adapter keeps `{{heading}}` bindings in a sanitized template, drops `<script>`, `<iframe>`, `<svg>`, `<form>`, handlers, `javascript:` hrefs and `style=`, forces `rel="noopener noreferrer"` on `target="_blank"`, and refuses nothing it should not (a sanitized module's `<style>` export is outside the sanitizer, as documented: the Clips stylesheet still applies).
+
+## Deploy (GitHub Pages)
+
+Not a library finding; what a subpath deploy needed from the app and from mport.
+
+- **The page must not assume it is at `/`.** mport's `local({ base })` and `custom("<base>components/{path}")` take the base, so the same build emits `/workbench/vendor/...` and `"@workbench/ui/": "/workbench/components/"`; the template's own links became relative. A relative URL inside **sanitized content** resolves against the document, not the module: the Clips card's `<img src="/favicon.svg">` was a 404 at `/workbench/` (found by the deployed-site test as a console error), so it is `src="favicon.svg"` now.
+- **Libraries are copied into the artifact** (`dist/vendor/`), not served from `node_modules`, and mport's map points there. `mport.lock.json` pins versions, not URLs, so one lockfile serves both builds.
+- **The CSP and the integrity hash stay correct** because the map is rendered after the base is known (`renderImportMapCsp()`); a changed base changes the hash, not a hand-edited string.
+
 ## Engines
 
 | | Chromium | Firefox | WebKit |
@@ -131,6 +160,10 @@ Status keys: **fixed** (library sha, and the workbench commit that removed the w
 | DOMParser `<style>` CSP error (H3) | fixed, 0 reports | 0 reports | 0 reports |
 | Nested interactive control in a `form-role` button (H6) | fixed | fixed | fixed |
 | Restore button after a click on Maximize, tiled window (W8) | stale style, fixed | n/a | n/a |
+| Sanitizer engine for `<safe-fragment>` and the hook | native (`setHTML`) | native (CI) | DOMPurify (no `setHTML`) |
+| DOMPurify path under `trusted-types html-modules dompurify` (forced where `setHTML` exists) | works | works (CI) | works |
+| Parse-time CSP reports for `style=` / `<style>` / `<base>` input (S1) | reports (native: attr; DOMPurify: attr, elem, base-uri) | see CI | none |
+| Native report lists the engine's own removals (S2) | no | no | n/a (DOMPurify lists them) |
 
 In Playwright's Firefox, a touch tap on a `<slot>` inside a shadow `<button>` delivers only pointer events, with no click. This was measured with plain shadow-DOM buttons and does not involve library code.
 

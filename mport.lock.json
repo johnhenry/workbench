@@ -23,6 +23,27 @@
       "provider": "local",
       "url": "/node_modules/@johnhenry/html-modules/src/runtime.js"
     },
+    "@johnhenry/html-modules/safe-fragment": {
+      "specifier": "@johnhenry/html-modules/safe-fragment",
+      "registry": "npm",
+      "name": "@johnhenry/html-modules",
+      "version": "0.0.0",
+      "path": "safe-fragment",
+      "entry": "src/safe-fragment.js",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/html-modules/src/safe-fragment.js"
+    },
+    "@johnhenry/safe-fragment": {
+      "specifier": "@johnhenry/safe-fragment",
+      "registry": "npm",
+      "name": "@johnhenry/safe-fragment",
+      "version": "0.0.0",
+      "entry": "dist/index.js",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/@johnhenry/safe-fragment/dist/index.js"
+    },
     "@johnhenry/window-algebra": {
       "specifier": "@johnhenry/window-algebra",
       "registry": "npm",
@@ -85,6 +106,17 @@
       "provider": "esm.sh",
       "url": "https://esm.sh/dayjs@1.11.23/plugin/relativeTime?target=es2022",
       "integrity": "sha384-9AsXsu+3IQoPbCGuFM2z0F/NsxDWu60JSQbHzFx+WWKAqpL/NhbcHBulw0PLJi+p"
+    },
+    "dompurify@3.4.16": {
+      "specifier": "dompurify@3.4.16",
+      "registry": "npm",
+      "name": "dompurify",
+      "range": "3.4.16",
+      "version": "3.4.16",
+      "entry": "dist/purify.es.mjs",
+      "build": "npm",
+      "provider": "local",
+      "url": "/node_modules/dompurify/dist/purify.es.mjs"
     }
   },
   "files": {

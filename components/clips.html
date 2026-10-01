@@ -1,0 +1,30 @@
+<!-- Clips: a tool whose card comes from a module the workbench does not fully trust (components/untrusted/clip.html).
+     The tool itself is ours; the glue (app/tools/clips.js) loads that module through html-modules' sanitize hook and
+     lists what the sanitizer removed. -->
+<html-export name="clips-tool" props="removed:number">
+  <style>
+    :host { display: block; padding: var(--wa-space-md, 12px); font-family: var(--wb-font, system-ui); color: var(--wa-color-fg); }
+    h3 { margin: 1rem 0 0.4rem; font-size: 0.9375rem; }
+    p { margin: 0; font-size: 0.875rem; color: var(--wb-muted, #4f5865); }
+    .stage { margin-top: 0.6rem; }
+    .rows { display: grid; gap: 0.25rem; }
+    .empty { margin: 0; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
+  </style>
+  <template>
+    <p>This card is defined by a module from a less-trusted origin. Its template was sanitized by safe-fragment
+       (<code>safeFragmentSanitizer</code>) before the component existed.</p>
+    <section class="stage" aria-label="The less-trusted card"><slot name="card"><p class="empty">Loading the module…</p></slot></section>
+    <h3 id="removed-heading">Removed by the sanitizer: <kit--badge>{{removed}}</kit--badge></h3>
+    <section class="rows" aria-labelledby="removed-heading" data-report><slot name="removed"><p class="empty">Nothing removed yet.</p></slot></section>
+  </template>
+</html-export>
+
+<html-export name="removal" props="name detail">
+  <style>
+    :host { display: block; }
+    div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; align-items: baseline; font-size: 0.8125rem; padding: 0.2rem 0; border-bottom: var(--wa-border-width, 1px) solid var(--wa-color-border); }
+    .name { font-family: var(--wb-mono, monospace); overflow-wrap: anywhere; }
+    .detail { color: var(--wb-muted, #4f5865); text-align: end; overflow-wrap: anywhere; }
+  </style>
+  <template><div><span class="name">{{name}}</span><span class="detail">{{detail}}</span></div></template>
+</html-export>
