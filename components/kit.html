@@ -43,7 +43,7 @@
 </html-export>
 
 <!-- Form-associated: a real form control. It takes part in FormData, :invalid, reset and required. -->
-<html-export name="field" form-associated form-control="input" props="placeholder">
+<html-export name="field" form-associated form-control="input" delegates-focus props="placeholder">
   <style>
     :host { display: block; }
     label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
@@ -60,7 +60,7 @@
   </template>
 </html-export>
 
-<html-export name="area" form-associated form-control="textarea" props="placeholder">
+<html-export name="area" form-associated form-control="textarea" delegates-focus props="placeholder">
   <style>
     :host { display: block; }
     label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
@@ -76,7 +76,7 @@
   </template>
 </html-export>
 
-<html-export name="date-field" form-associated form-control="input">
+<html-export name="date-field" form-associated form-control="input" delegates-focus>
   <style>
     :host { display: block; }
     label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--wb-muted, #4f5865); }
