@@ -201,6 +201,8 @@ fix, with a regression test; `package.json` pins a commit at or after it) and th
 | S1 | safe-fragment | parsing input with `style=`, `<style>` or `<base>` reports CSP violations on Chromium (`style-src-attr`, `style-src-elem`, `base-uri`) although the output is clean | [issue #13](https://github.com/johnhenry/safe-fragment/issues/13) |
 | S2 | safe-fragment | the native engine's report cannot list its own removals (script, frames, `on*`, `javascript:`), so "removed 1" can mean five | documented limit (ADR 0007); the UI says so |
 | S3 | mport | a dependency found by `dependencies: true` is routed like any specifier: with `"*": esmSh()` dompurify went to esm.sh, not next to its dependent | documented; needs its own route (`dompurify: local()`) |
+| S4 | safe-fragment | `article-v1` has no sectioning elements (`article`, `section`, `header`, ...): they are unwrapped | profile decision, noted |
+| S5 | safe-fragment | Firefox's native engine leaves a bare `<img src="x">` for the `<noscript>` mXSS payload (scripting flag on) | known, in safe-fragment's corpus |
 | W8 | window-algebra | Chromium: a mouse click on Maximize of a tiled window left the Restore button hidden (attributes written before `moveBefore()`) | fixed `3fe88ea` |
 | W9 | window-algebra | the chrome's scrolling body was not focusable when its content rendered after mount (axe) | fixed `3fe88ea` |
 

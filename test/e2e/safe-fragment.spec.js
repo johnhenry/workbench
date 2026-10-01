@@ -29,7 +29,6 @@ const PAYLOAD = `
 <object data="javascript:window.__pwned.push('object')"></object>
 <form action="javascript:window.__pwned.push('form')"><button formaction="javascript:window.__pwned.push('formaction')">go</button><input autofocus onfocus="window.__pwned.push('input onfocus')"></form>
 <div onclick="window.__pwned.push('onclick')" onmouseover="window.__pwned.push('onmouseover')">styled</div>
-<noscript><p title="</noscript><img src=x onerror=window.__pwned.push('noscript')>"></p></noscript>
 <meta http-equiv="refresh" content="0;url=https://evil.example/">
 `;
 
@@ -210,12 +209,14 @@ for (const engine of ENGINES) {
 
     test("input with style=, <style> or <base> is sanitized too; Chromium reports its parse as CSP violations (safe-fragment#13)", async ({ page, problems }) => {
       await openApp(page);
-      const card = await addNote(page, "Parse-time", `<p style="background:url(https://evil.example/css.png)" onclick="window.__pwned.push('onclick')">styled <strong>text</strong></p><style>p{background:url(https://evil.example/s.png)}</style><base href="https://evil.example/"><math><mtext><table><mglyph><style><!--</style><img title="--&gt;&lt;img src=1 onerror=window.__pwned.push('mxss')&gt;"></mglyph></table></mtext></math>`);
+      const card = await addNote(page, "Parse-time", `<p style="background:url(https://evil.example/css.png)" onclick="window.__pwned.push('onclick')">styled <strong>text</strong></p><style>p{background:url(https://evil.example/s.png)}</style><base href="https://evil.example/"><math><mtext><table><mglyph><style><!--</style><img title="--&gt;&lt;img src=1 onerror=window.__pwned.push('mxss')&gt;"></mglyph></table></mtext></math><noscript><p title="</noscript><img src=x onerror=window.__pwned.push('noscript')>"></p></noscript>`);
       await expect(card.locator(".body strong")).toHaveText("text");
       const found = await inspect(card);
       expect(found.styled).toBe(0);
       expect(found.hasStyleOrBase).toBe(false);
       expect(found.handlers).toEqual([]);
+      // Firefox's native setHTML parses with the scripting flag on, so the <noscript> item may leave a bare <img src="x"> (no
+      // handler; profile-conformant; safe-fragment's xss-corpus documents it). It is why that item is not in the shared payload.
       await card.locator(".body p").dispatchEvent("click");
       expect(await page.evaluate(() => window.__pwned)).toEqual([]);
       // Chromium reports the parse itself (style-src-attr, style-src-elem, base-uri) although nothing is applied; WebKit does not.
