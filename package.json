@@ -23,10 +23,10 @@
     "test:pages": "playwright test --config playwright.pages.config.js"
   },
   "dependencies": {
-    "@johnhenry/html-modules": "github:johnhenry/html-modules#2dd5a5f98c58f043b2c743eb48be08a28870539b",
-    "@johnhenry/mport": "github:johnhenry/mport#928dd6b0819043a9c011971b8daec349fc399daa",
-    "@johnhenry/safe-fragment": "github:johnhenry/safe-fragment#5717e5200535429fed3adc60fb7cd181dd68d6e8",
-    "@johnhenry/window-algebra": "github:johnhenry/window-algebra#6b17bfc98bea50b66e9d90ca990947a52a8fd4eb"
+    "@johnhenry/html-modules": "github:johnhenry/html-modules#b410eddc6b5c10dcd34e958d84f2c2f9ec9e1963",
+    "@johnhenry/mport": "github:johnhenry/mport#f5109bfd20663df760fc60ffe8c055c9679ab04e",
+    "@johnhenry/safe-fragment": "0.0.0",
+    "@johnhenry/window-algebra": "github:johnhenry/window-algebra#fe20af1efb6febf07e8f45beb784d009e2a316e1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
