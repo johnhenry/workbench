@@ -11,7 +11,7 @@ The question: do @johnhenry/mport, @johnhenry/html-modules, @johnhenry/window-al
 - **The shell knows nothing about the components.** A window body is a plain custom element, so window-algebra needs no knowledge of html-modules.
 - **The fourth library joins the same way.** safe-fragment and its dompurify dependency are import-map entries (the second one added by mport's `dependencies: true`); html-modules' `sanitize` hook takes safe-fragment as an argument, and `<safe-fragment>` is just another custom element in a template. Neither imports the other. Under the strict CSP with Trusted Types (`trusted-types html-modules dompurify`) the DOMPurify path (WebKit's only one) works, and the whole app deploys unchanged to a subpath.
 
-Status keys: **fixed** (library sha, and the workbench commit that removed the workaround), **issue** (link), **wontfix** (why). The workbench now pins mport `928dd6b`, html-modules `2dd5a5f`, window-algebra `6b17bfc` and safe-fragment `5717e52`.
+Status keys: **fixed** (library sha, and the workbench commit that removed the workaround), **issue** (link), **wontfix** (why). The workbench now pins mport `f5109bf`, html-modules `b410edd`, window-algebra `fe20af1` and safe-fragment `0.0.0` (npm).
 
 ## mport
 
