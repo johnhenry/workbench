@@ -1,7 +1,7 @@
 name: Pages
 
-# Build the site with mport, upload it as the Pages artifact, deploy it, then run the Playwright smoke suite against the
-# URL that was deployed. Pages is set to "GitHub Actions" as its source (Settings > Pages).
+# The app is retired: Pages serves only the redirect page in redirect/ (to https://opensource.johnhenry.me/orrery/#/workbench).
+# Pages is set to "GitHub Actions" as its source (Settings > Pages).
 on:
   push:
     branches: [main]
@@ -19,25 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 26
-          cache: npm
-      # package-lock.json records the git dependencies as git+ssh://git@github.com/...; the runner has no ssh key.
-      - name: Fetch git dependencies over https
-        run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: npm ci
-      # mport builds the import map for the site's subpath (/workbench/): the libraries are copied into dist/vendor/ and the
-      # map, the CSP and the component prefix all carry the base. mport.lock.json is read; esm.sh files are re-hashed.
-      - run: npm run build:pages
-      - name: What is in the artifact
-        run: |
-          find dist -maxdepth 3 -not -path 'dist/vendor/*/*/*' | sort | head -60
-          du -sh dist
-          ! grep -rn '/node_modules/' dist/index.html dist/importmap.json
+      # Retired 2026-10-03: the site is now only a redirect to the orrery planet. redirect/index.html covers the root and
+      # redirect/404.html every deep path (GitHub Pages serves 404.html for any missing file).
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: redirect
 
   deploy:
     needs: build
@@ -48,35 +34,6 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
-
-  smoke:
-    name: smoke (deployed URL, non-gating)
-    needs: deploy
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 26
-          cache: npm
-      - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - name: Playwright against the deployed site
-        run: npx playwright test --config playwright.pages.config.js
-        env:
-          WORKBENCH_URL: ${{ needs.deploy.outputs.page_url }}
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report-pages
-          path: |
-            playwright-report
-            test-results
-          retention-days: 7

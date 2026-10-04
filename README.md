@@ -1,8 +1,14 @@
 # workbench
 
+> **Retired on 2026-10-03.** This repository is archived and kept read-only for its source and [FINDINGS.md](FINDINGS.md).
+> The interactive version lives at the orrery planet **Untrusted Desk**:
+> <https://opensource.johnhenry.me/orrery/#/workbench>. What was folded where: the window-algebra shell and the
+> safe-fragment untrusted-HTML rendering are in that planet; the mport story (no bundler, strict CSP, the import map as
+> the seam) moves to a future mport planet. <https://johnhenry.github.io/workbench/> now only redirects to the planet.
+
 [![CI](https://github.com/johnhenry/workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/johnhenry/workbench/actions/workflows/ci.yml)
 
-**Live: <https://johnhenry.github.io/workbench/>** (GitHub Pages, deployed from CI; see [Deploy](#deploy)).
+~~Live: <https://johnhenry.github.io/workbench/>~~ (retired; the Pages URL redirects to the orrery planet, see [Deploy](#deploy)).
 
 A small, real app that exists to test one claim: that four sibling libraries, which depend on nothing
 from each other, **meet at the import map**.
@@ -114,7 +120,8 @@ clean. One test removes the page's CSP altogether: the sanitizer alone still hol
 
 ## Deploy
 
-**<https://johnhenry.github.io/workbench/>**, from `.github/workflows/pages.yml` (Pages source: "GitHub Actions"):
+Since the retirement, `.github/workflows/pages.yml` deploys only [`redirect/`](redirect) (an `index.html` and a `404.html` that
+send every path to the orrery planet). Before that, the app was deployed to <https://johnhenry.github.io/workbench/> like this:
 
 1. `npm run build:pages` runs the same mport build with `--base /workbench/ --out dist`: the import map, the CSP and the
    `@workbench/ui/` prefix carry the base, and the libraries are **copied into `dist/vendor/`** (a static host serves no
